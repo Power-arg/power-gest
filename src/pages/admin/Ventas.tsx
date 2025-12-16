@@ -13,12 +13,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Loader2 } from 'lucide-react';
-import { Venta } from '@/types/admin';
-import { getVentas, createVenta, updateVenta, deleteVenta } from '@/lib/api';
+import { Venta, StockItem } from '@/types/admin';
+import { getVentas, createVenta, updateVenta, deleteVenta, getStock } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value);
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 const metodoPagoLabels: Record<string, string> = {
   efectivo: 'Efectivo',
@@ -29,6 +37,7 @@ const metodoPagoLabels: Record<string, string> = {
 
 export default function Ventas() {
   const [ventas, setVentas] = useState<Venta[]>([]);
+  const [stock, setStock] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingVenta, setEditingVenta] = useState<Venta | null>(null);
@@ -42,7 +51,7 @@ export default function Ventas() {
     cliente: '',
     metodoPago: 'efectivo' as Venta['metodoPago'],
     isPagado: true,
-    usuarioACargo: 'Admin',
+    usuarioACargo: '',
     fecha: new Date().toISOString().split('T')[0],
   });
 
@@ -55,8 +64,18 @@ export default function Ventas() {
     }
   };
 
+  const fetchStock = async () => {
+    try {
+      const data = await getStock();
+      setStock(data);
+    } catch (error) {
+      toast({ title: 'Error al cargar stock', variant: 'destructive' });
+    }
+  };
+
   useEffect(() => {
     fetchVentas();
+    fetchStock();
   }, []);
 
   const resetForm = () => {
@@ -68,7 +87,7 @@ export default function Ventas() {
       cliente: '',
       metodoPago: 'efectivo',
       isPagado: true,
-      usuarioACargo: 'Admin',
+      usuarioACargo: '',
       fecha: new Date().toISOString().split('T')[0],
     });
     setEditingVenta(null);
@@ -106,6 +125,18 @@ export default function Ventas() {
     }
   };
 
+  const handleProductSelect = (productKey: string) => {
+    const selectedStock = stock.find(s => s.id === productKey);
+    if (selectedStock) {
+      setFormData({
+        ...formData,
+        producto: selectedStock.producto,
+        proveedor: selectedStock.proveedor,
+        precioUnitarioVenta: selectedStock.precioUnitarioVenta.toString(),
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -134,6 +165,7 @@ export default function Ventas() {
       setDialogOpen(false);
       resetForm();
       fetchVentas();
+      fetchStock(); // Actualizar stock después de crear/editar venta
     } catch {
       toast({ title: 'Error al guardar', variant: 'destructive' });
     } finally {
@@ -176,7 +208,12 @@ export default function Ventas() {
         </span>
       ),
     },
-    { key: 'fecha', label: 'Fecha' },
+    { key: 'usuarioACargo', label: 'Usuario' },
+    {
+      key: 'fecha',
+      label: 'Fecha',
+      render: (v: Venta) => formatDate(v.fecha),
+    },
   ];
 
   if (loading) {
@@ -186,6 +223,9 @@ export default function Ventas() {
       </div>
     );
   }
+
+  // Filtrar solo productos con stock disponible
+  const availableStock = stock.filter(s => s.cantidadTotal > 0);
 
   return (
     <div className="space-y-6">
@@ -216,6 +256,30 @@ export default function Ventas() {
         title={editingVenta ? 'Editar Venta' : 'Nueva Venta'}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!editingVenta && (
+            <div className="space-y-2">
+              <Label htmlFor="productoSelect">Seleccionar Producto del Stock</Label>
+              <Select onValueChange={handleProductSelect}>
+                <SelectTrigger className="admin-input">
+                  <SelectValue placeholder="Selecciona un producto..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableStock.length === 0 ? (
+                    <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                      No hay productos con stock disponible
+                    </div>
+                  ) : (
+                    availableStock.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.producto} - {item.proveedor} (Stock: {item.cantidadTotal}) - {formatCurrency(item.precioUnitarioVenta)}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="producto">Producto</Label>
@@ -224,6 +288,7 @@ export default function Ventas() {
                 value={formData.producto}
                 onChange={(e) => setFormData({ ...formData, producto: e.target.value })}
                 className="admin-input"
+                readOnly={!editingVenta}
                 required
               />
             </div>
@@ -234,6 +299,7 @@ export default function Ventas() {
                 value={formData.proveedor}
                 onChange={(e) => setFormData({ ...formData, proveedor: e.target.value })}
                 className="admin-input"
+                readOnly={!editingVenta}
                 required
               />
             </div>
@@ -248,6 +314,7 @@ export default function Ventas() {
                 value={formData.precioUnitarioVenta}
                 onChange={(e) => setFormData({ ...formData, precioUnitarioVenta: e.target.value })}
                 className="admin-input"
+                step="0.01"
                 required
               />
             </div>
@@ -276,6 +343,20 @@ export default function Ventas() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="usuarioACargo">Usuario a Cargo</Label>
+              <Input
+                id="usuarioACargo"
+                value={formData.usuarioACargo}
+                onChange={(e) => setFormData({ ...formData, usuarioACargo: e.target.value })}
+                className="admin-input"
+                placeholder="Nombre del responsable"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label htmlFor="metodoPago">Método de Pago</Label>
               <Select
                 value={formData.metodoPago}
@@ -294,9 +375,6 @@ export default function Ventas() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fecha">Fecha</Label>
               <Input
@@ -308,14 +386,15 @@ export default function Ventas() {
                 required
               />
             </div>
-            <div className="flex items-center gap-3 pt-8">
-              <Switch
-                id="isPagado"
-                checked={formData.isPagado}
-                onCheckedChange={(checked) => setFormData({ ...formData, isPagado: checked })}
-              />
-              <Label htmlFor="isPagado">Pagado</Label>
-            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
+            <Switch
+              id="isPagado"
+              checked={formData.isPagado}
+              onCheckedChange={(checked) => setFormData({ ...formData, isPagado: checked })}
+            />
+            <Label htmlFor="isPagado">Pagado</Label>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">

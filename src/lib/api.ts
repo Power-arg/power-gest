@@ -1,298 +1,430 @@
 import { Venta, Compra, StockItem, DashboardStats, ChartData } from '@/types/admin';
 
-// ============================================
-// MOCK API - Ready to connect to Google Sheets
-// ============================================
-// Replace these functions with actual Google Sheets API calls
-// or Google Apps Script Web App endpoints
-
-const MOCK_PASSWORD = 'power2024'; // Replace with Google Sheets validation
-
 // Simulated delay for realistic API behavior
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ============================================
-// AUTHENTICATION
+//             AUTHENTICATION
 // ============================================
 export async function validatePassword(password: string): Promise<boolean> {
-  await delay(500);
-  // TODO: Replace with Google Sheets API call
-  // Example: fetch('YOUR_GOOGLE_APPS_SCRIPT_URL?action=validatePassword&password=' + password)
-  return password === MOCK_PASSWORD;
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Error de conexión');
+  }
+
+  const data = await response.json();
+  return data.success === true;
 }
 
 // ============================================
 // VENTAS CRUD
 // ============================================
-let mockVentas: Venta[] = [
-  {
-    id: '1',
-    producto: 'Whey Protein Gold Standard',
-    proveedor: 'Optimum Nutrition',
-    precioUnitarioVenta: 45000,
-    cantidad: 2,
-    cliente: 'Juan Pérez',
-    metodoPago: 'tarjeta',
-    isPagado: true,
-    usuarioACargo: 'Admin',
-    fecha: '2024-01-15',
-  },
-  {
-    id: '2',
-    producto: 'Creatina Monohidrato 500g',
-    proveedor: 'Universal Nutrition',
-    precioUnitarioVenta: 18000,
-    cantidad: 3,
-    cliente: 'María García',
-    metodoPago: 'efectivo',
-    isPagado: true,
-    usuarioACargo: 'Admin',
-    fecha: '2024-01-16',
-  },
-  {
-    id: '3',
-    producto: 'BCAA 2:1:1 300g',
-    proveedor: 'Muscletech',
-    precioUnitarioVenta: 22000,
-    cantidad: 1,
-    cliente: 'Carlos López',
-    metodoPago: 'transferencia',
-    isPagado: false,
-    usuarioACargo: 'Admin',
-    fecha: '2024-01-17',
-  },
-  {
-    id: '4',
-    producto: 'Pre-Workout C4',
-    proveedor: 'Cellucor',
-    precioUnitarioVenta: 28000,
-    cantidad: 2,
-    cliente: 'Ana Martínez',
-    metodoPago: 'mercadopago',
-    isPagado: true,
-    usuarioACargo: 'Admin',
-    fecha: '2024-01-18',
-  },
-];
-
 export async function getVentas(): Promise<Venta[]> {
-  await delay(300);
-  return [...mockVentas];
+  try {
+    const response = await fetch('/api/ventas', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener las ventas');
+    }
+
+    const result = await response.json();
+
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error('Respuesta inválida del servidor');
+    }
+
+    return result.data.map((item: any) => ({
+      id: String(item.id),
+      producto: item.producto,
+      proveedor: item.proveedor,
+      precioUnitarioVenta: Number(item.precioUnitarioVenta),
+      cantidad: Number(item.cantidad),
+      cliente: item.cliente,
+      metodoPago: item.metodoPago,
+      isPagado: Boolean(item.isPagado),
+      usuarioACargo: item.usuarioACargo,
+      fecha: item.fecha,
+    }));
+  } catch (error) {
+    console.error('Error fetching ventas:', error);
+    throw error;
+  }
 }
 
 export async function createVenta(venta: Omit<Venta, 'id'>): Promise<Venta> {
-  await delay(300);
-  const newVenta = { ...venta, id: Date.now().toString() };
-  mockVentas.push(newVenta);
-  return newVenta;
+  try {
+    const response = await fetch('/api/ventas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(venta),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al crear la venta');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al crear la venta');
+    }
+
+    return {
+      id: String(result.data.id),
+      ...venta,
+    };
+  } catch (error) {
+    console.error('Error creating venta:', error);
+    throw error;
+  }
 }
 
 export async function updateVenta(id: string, venta: Partial<Venta>): Promise<Venta> {
-  await delay(300);
-  const index = mockVentas.findIndex(v => v.id === id);
-  if (index === -1) throw new Error('Venta not found');
-  mockVentas[index] = { ...mockVentas[index], ...venta };
-  return mockVentas[index];
+  try {
+    const response = await fetch('/api/ventas', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...venta }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al actualizar la venta');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al actualizar la venta');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error updating venta:', error);
+    throw error;
+  }
 }
 
 export async function deleteVenta(id: string): Promise<void> {
-  await delay(300);
-  mockVentas = mockVentas.filter(v => v.id !== id);
+  try {
+    const response = await fetch('/api/ventas', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al eliminar la venta');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al eliminar la venta');
+    }
+  } catch (error) {
+    console.error('Error deleting venta:', error);
+    throw error;
+  }
 }
 
 // ============================================
 // COMPRAS CRUD
 // ============================================
-let mockCompras: Compra[] = [
-  {
-    id: '1',
-    producto: 'Whey Protein Gold Standard',
-    proveedor: 'Optimum Nutrition',
-    precioUnitarioCompra: 32000,
-    cantidad: 10,
-    fecha: '2024-01-10',
-  },
-  {
-    id: '2',
-    producto: 'Creatina Monohidrato 500g',
-    proveedor: 'Universal Nutrition',
-    precioUnitarioCompra: 12000,
-    cantidad: 15,
-    fecha: '2024-01-11',
-  },
-  {
-    id: '3',
-    producto: 'BCAA 2:1:1 300g',
-    proveedor: 'Muscletech',
-    precioUnitarioCompra: 15000,
-    cantidad: 8,
-    fecha: '2024-01-12',
-  },
-  {
-    id: '4',
-    producto: 'Pre-Workout C4',
-    proveedor: 'Cellucor',
-    precioUnitarioCompra: 20000,
-    cantidad: 12,
-    fecha: '2024-01-13',
-  },
-];
-
 export async function getCompras(): Promise<Compra[]> {
-  await delay(300);
-  return [...mockCompras];
+  try {
+    const response = await fetch('/api/compras', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener las compras');
+    }
+
+    const result = await response.json();
+
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error('Respuesta inválida del servidor');
+    }
+
+    return result.data.map((item: any) => ({
+      id: String(item.id),
+      producto: item.producto,
+      proveedor: item.proveedor,
+      precioUnitarioCompra: Number(item.precioUnitarioCompra),
+      cantidad: Number(item.cantidad),
+      fecha: item.fecha,
+    }));
+  } catch (error) {
+    console.error('Error fetching compras:', error);
+    throw error;
+  }
 }
 
 export async function createCompra(compra: Omit<Compra, 'id'>): Promise<Compra> {
-  await delay(300);
-  const newCompra = { ...compra, id: Date.now().toString() };
-  mockCompras.push(newCompra);
-  return newCompra;
+  try {
+    const response = await fetch('/api/compras', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(compra),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al crear la compra');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al crear la compra');
+    }
+
+    return {
+      id: String(result.data.id),
+      ...compra,
+    };
+  } catch (error) {
+    console.error('Error creating compra:', error);
+    throw error;
+  }
 }
 
 export async function updateCompra(id: string, compra: Partial<Compra>): Promise<Compra> {
-  await delay(300);
-  const index = mockCompras.findIndex(c => c.id === id);
-  if (index === -1) throw new Error('Compra not found');
-  mockCompras[index] = { ...mockCompras[index], ...compra };
-  return mockCompras[index];
+  try {
+    const response = await fetch('/api/compras', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...compra }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al actualizar la compra');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al actualizar la compra');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error updating compra:', error);
+    throw error;
+  }
 }
 
 export async function deleteCompra(id: string): Promise<void> {
-  await delay(300);
-  mockCompras = mockCompras.filter(c => c.id !== id);
+  try {
+    const response = await fetch('/api/compras', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al eliminar la compra');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al eliminar la compra');
+    }
+  } catch (error) {
+    console.error('Error deleting compra:', error);
+    throw error;
+  }
 }
 
 // ============================================
 // STOCK (Calculated)
 // ============================================
 export async function getStock(): Promise<StockItem[]> {
-  await delay(300);
-  const ventas = await getVentas();
-  const compras = await getCompras();
+  try {
+    const response = await fetch('/api/stock', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
 
-  const stockMap = new Map<string, StockItem>();
-
-  // Process purchases
-  compras.forEach(compra => {
-    const key = `${compra.producto}-${compra.proveedor}`;
-    const existing = stockMap.get(key);
-    if (existing) {
-      existing.cantidadComprada += compra.cantidad;
-      existing.cantidadTotal = existing.cantidadComprada - existing.cantidadVendida;
-    } else {
-      stockMap.set(key, {
-        id: key,
-        producto: compra.producto,
-        proveedor: compra.proveedor,
-        precioUnitarioVenta: 0,
-        cantidadVendida: 0,
-        cantidadComprada: compra.cantidad,
-        cantidadTotal: compra.cantidad,
-      });
+    if (!response.ok) {
+      throw new Error('Error al obtener el stock');
     }
-  });
 
-  // Process sales
-  ventas.forEach(venta => {
-    const key = `${venta.producto}-${venta.proveedor}`;
-    const existing = stockMap.get(key);
-    if (existing) {
-      existing.cantidadVendida += venta.cantidad;
-      existing.precioUnitarioVenta = venta.precioUnitarioVenta;
-      existing.cantidadTotal = existing.cantidadComprada - existing.cantidadVendida;
-    } else {
-      stockMap.set(key, {
-        id: key,
-        producto: venta.producto,
-        proveedor: venta.proveedor,
-        precioUnitarioVenta: venta.precioUnitarioVenta,
-        cantidadVendida: venta.cantidad,
-        cantidadComprada: 0,
-        cantidadTotal: -venta.cantidad,
-      });
+    const result = await response.json();
+
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error('Respuesta inválida del servidor');
     }
-  });
 
-  return Array.from(stockMap.values());
+    // Transformar los datos del backend al formato del frontend
+    return result.data.map((item: any) => ({
+      id: `${item.producto}-${item.proveedor}`,
+      producto: item.producto,
+      proveedor: item.proveedor,
+      precioUnitarioVenta: Number(item.precioUnitarioVenta) || 0,
+      cantidadVendida: Number(item.cantidadVendida) || 0,
+      cantidadComprada: Number(item.cantidadComprada) || 0,
+      cantidadTotal: Number(item.cantidadTotal) || 0,
+    }));
+  } catch (error) {
+    console.error('Error fetching stock:', error);
+    throw error;
+  }
 }
 
 // ============================================
 // DASHBOARD STATS
 // ============================================
 export async function getDashboardStats(): Promise<DashboardStats> {
-  await delay(300);
-  const ventas = await getVentas();
-  const compras = await getCompras();
-  const stock = await getStock();
+  try {
+    const response = await fetch('/api/dashboard', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
 
-  const totalIngresos = ventas.reduce((acc, v) => acc + (v.precioUnitarioVenta * v.cantidad), 0);
-  const totalCompras = compras.reduce((acc, c) => acc + (c.precioUnitarioCompra * c.cantidad), 0);
-  const stockDisponible = stock.reduce((acc, s) => acc + s.cantidadTotal, 0);
+    if (!response.ok) {
+      throw new Error('Error al obtener estadísticas');
+    }
 
-  const today = new Date().toISOString().split('T')[0];
-  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const result = await response.json();
 
-  const ventasHoy = ventas
-    .filter(v => v.fecha === today)
-    .reduce((acc, v) => acc + (v.precioUnitarioVenta * v.cantidad), 0);
+    if (!result.success) {
+      throw new Error(result.error || 'Error al obtener estadísticas');
+    }
 
-  const ventasSemana = ventas
-    .filter(v => v.fecha >= weekAgo)
-    .reduce((acc, v) => acc + (v.precioUnitarioVenta * v.cantidad), 0);
-
-  return {
-    totalIngresos,
-    totalCompras,
-    gananciaNet: totalIngresos - totalCompras,
-    stockDisponible,
-    ventasHoy,
-    ventasSemana,
-  };
+    return result.data.stats;
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    throw error;
+  }
 }
 
 // ============================================
 // CHART DATA
 // ============================================
 export async function getSalesChartData(): Promise<ChartData[]> {
-  await delay(200);
-  return [
-    { name: 'Ene', ventas: 125000, compras: 85000 },
-    { name: 'Feb', ventas: 148000, compras: 92000 },
-    { name: 'Mar', ventas: 167000, compras: 98000 },
-    { name: 'Abr', ventas: 189000, compras: 105000 },
-    { name: 'May', ventas: 212000, compras: 115000 },
-    { name: 'Jun', ventas: 245000, compras: 128000 },
-  ];
+  try {
+    const response = await fetch('/api/dashboard', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener datos de ventas');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al obtener datos de ventas');
+    }
+
+    return result.data.charts.salesData;
+  } catch (error) {
+    console.error('Error fetching sales chart data:', error);
+    return [];
+  }
 }
 
 export async function getTopProductsData(): Promise<ChartData[]> {
-  await delay(200);
-  return [
-    { name: 'Whey Protein', value: 45 },
-    { name: 'Creatina', value: 32 },
-    { name: 'BCAA', value: 28 },
-    { name: 'Pre-Workout', value: 24 },
-    { name: 'Glutamina', value: 18 },
-  ];
+  try {
+    const response = await fetch('/api/dashboard', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener productos top');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al obtener productos top');
+    }
+
+    return result.data.charts.topProducts;
+  } catch (error) {
+    console.error('Error fetching top products data:', error);
+    return [];
+  }
 }
 
 export async function getPaymentMethodsData(): Promise<ChartData[]> {
-  await delay(200);
-  return [
-    { name: 'Tarjeta', value: 35, fill: 'hsl(0, 0%, 90%)' },
-    { name: 'Efectivo', value: 28, fill: 'hsl(0, 0%, 70%)' },
-    { name: 'Transferencia', value: 22, fill: 'hsl(0, 0%, 50%)' },
-    { name: 'MercadoPago', value: 15, fill: 'hsl(0, 0%, 30%)' },
-  ];
+  try {
+    const response = await fetch('/api/dashboard', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener métodos de pago');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al obtener métodos de pago');
+    }
+
+    // Agregar colores dinámicos
+    const colors = [
+      'hsl(0, 0%, 90%)',
+      'hsl(0, 0%, 70%)',
+      'hsl(0, 0%, 50%)',
+      'hsl(0, 0%, 30%)',
+    ];
+
+    return result.data.charts.paymentMethods.map((item: ChartData, index: number) => ({
+      ...item,
+      fill: colors[index % colors.length],
+    }));
+  } catch (error) {
+    console.error('Error fetching payment methods data:', error);
+    return [];
+  }
 }
 
 export async function getProvidersData(): Promise<ChartData[]> {
-  await delay(200);
-  return [
-    { name: 'Optimum Nutrition', value: 40, fill: 'hsl(0, 0%, 85%)' },
-    { name: 'Muscletech', value: 25, fill: 'hsl(0, 0%, 65%)' },
-    { name: 'Universal', value: 20, fill: 'hsl(0, 0%, 45%)' },
-    { name: 'Cellucor', value: 15, fill: 'hsl(0, 0%, 25%)' },
-  ];
+  try {
+    const response = await fetch('/api/dashboard', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener proveedores');
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error al obtener proveedores');
+    }
+
+    // Agregar colores dinámicos
+    const colors = [
+      'hsl(0, 0%, 85%)',
+      'hsl(0, 0%, 65%)',
+      'hsl(0, 0%, 45%)',
+      'hsl(0, 0%, 25%)',
+    ];
+
+    return result.data.charts.providers.map((item: ChartData, index: number) => ({
+      ...item,
+      fill: colors[index % colors.length],
+    }));
+  } catch (error) {
+    console.error('Error fetching providers data:', error);
+    return [];
+  }
 }

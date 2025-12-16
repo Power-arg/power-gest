@@ -23,11 +23,8 @@ export function useAuthProvider() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user was previously authenticated
     const authToken = sessionStorage.getItem('power-admin-auth');
-    if (authToken === 'authenticated') {
-      setIsAuthenticated(true);
-    }
+    setIsAuthenticated(authToken === 'authenticated');
     setIsLoading(false);
   }, []);
 
@@ -35,12 +32,17 @@ export function useAuthProvider() {
     setIsLoading(true);
     try {
       const isValid = await validatePassword(password);
+
       if (isValid) {
         setIsAuthenticated(true);
         sessionStorage.setItem('power-admin-auth', 'authenticated');
         return true;
       }
+
       return false;
+    } catch (error) {
+      console.error('Auth error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
