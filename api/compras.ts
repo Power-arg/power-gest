@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getComprasCollection, getVentasCollection, updateStockAfterCompra,revertStockAfterDeleteCompra, adjustStockAfterUpdateCompra, CompraDB } from '../src/lib/mongodb/models';
+import { getComprasCollection, getVentasCollection, updateStockAfterCompra,revertStockAfterDeleteCompra, adjustStockAfterUpdateCompra, CompraDB } from '../src/lib/mongodb/models.js';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

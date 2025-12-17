@@ -1,4 +1,4 @@
-import clientPromise from './client';
+import clientPromise from './client.js';
 import { ObjectId } from 'mongodb';
 
 const DB_NAME = 'powergest';

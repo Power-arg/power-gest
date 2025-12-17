@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getConfigCollection } from '../src/lib/mongodb/models';
+import { getConfigCollection } from '../src/lib/mongodb/models.js';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

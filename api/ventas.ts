@@ -6,7 +6,7 @@ import {
   revertStockAfterDeleteVenta,
   adjustStockAfterUpdateVenta,
   VentaDB,
-} from '../src/lib/mongodb/models';
+} from '../src/lib/mongodb/models.js';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

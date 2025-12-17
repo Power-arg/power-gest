@@ -3,7 +3,7 @@ import {
   getVentasCollection,
   getComprasCollection,
   getStockCollection,
-} from '../../src/lib/mongodb/models';
+} from '../../src/lib/mongodb/models.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers

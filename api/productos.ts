@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getStockCollection } from '../src/lib/mongodb/models';
+import { getStockCollection } from '../src/lib/mongodb/models.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
