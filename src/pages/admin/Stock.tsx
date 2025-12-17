@@ -31,6 +31,7 @@ export default function Stock() {
     'Gentech': 'bg-blue-900 text-white',
     'GoldNutrition': 'bg-yellow-500 text-black',
     'Growsbar': 'bg-gray-600 text-white',
+    'Otro': 'bg-gray-300 text-black',
   };
 
   const columns = [
@@ -40,7 +41,7 @@ export default function Stock() {
       render: (s: StockItem) => (
         <div className="flex items-center gap-2 flex-wrap">
           <span>{s.producto}</span>
-          <span className={`px-2 py-1 rounded-md text-xs font-medium ${marcaColors[s.marca]}`}>
+          <span className={`px-2 py-1 rounded-md text-xs font-medium ${marcaColors[s.marca] || marcaColors['Otro']}`}>
             {s.marca}
           </span>
         </div>
@@ -196,7 +197,7 @@ export default function Stock() {
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-foreground">{item.producto}</h3>
-                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${marcaColors[item.marca]}`}>
+                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${marcaColors[item.marca] || marcaColors['Otro']}`}>
                         {item.marca}
                       </span>
                     </div>

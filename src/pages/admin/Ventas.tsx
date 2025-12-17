@@ -222,6 +222,7 @@ export default function Ventas() {
     'Gentech': 'bg-blue-900 text-white',
     'GoldNutrition': 'bg-yellow-500 text-black',
     'Growsbar': 'bg-gray-600 text-white',
+    'Otro': 'bg-gray-300 text-black',
   };
 
   const columns = [

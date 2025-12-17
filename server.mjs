@@ -109,13 +109,24 @@ async function updateStockAfterVenta(producto, proveedor, cantidadVendida, preci
 
 async function revertStockAfterDeleteCompra(producto, proveedor, cantidad) {
   const stockCollection = await getStockCollection();
-  await stockCollection.updateOne(
-    { producto, proveedor },
-    {
-      $inc: { cantidadComprada: -cantidad, cantidadTotal: -cantidad },
-      $set: { updatedAt: new Date() },
-    }
-  );
+  const comprasCollection = await getComprasCollection();
+
+  // Check if there are any remaining compras for this producto-proveedor
+  const remainingCompras = await comprasCollection.countDocuments({ producto, proveedor });
+
+  if (remainingCompras === 0) {
+    // If no compras remain, delete the stock entry entirely
+    await stockCollection.deleteOne({ producto, proveedor });
+  } else {
+    // If other compras exist, just decrement the quantities
+    await stockCollection.updateOne(
+      { producto, proveedor },
+      {
+        $inc: { cantidadComprada: -cantidad, cantidadTotal: -cantidad },
+        $set: { updatedAt: new Date() },
+      }
+    );
+  }
 }
 
 async function revertStockAfterDeleteVenta(producto, proveedor, cantidad) {
@@ -495,13 +506,23 @@ app.delete('/api/compras', async (req, res) => {
       return res.status(404).json({ error: 'Compra not found' });
     }
 
-    const ventasCollection = await getVentasCollection();
-    const hasSales = await ventasCollection.findOne({ producto: compra.producto, proveedor: compra.proveedor });
+    // Check if removing this compra would leave enough stock to cover existing sales
+    const stockCollection = await getStockCollection();
+    const stock = await stockCollection.findOne({ 
+      producto: compra.producto, 
+      proveedor: compra.proveedor 
+    });
 
-    if (hasSales) {
-      return res.status(400).json({
-        error: 'No se puede eliminar una compra de un producto-proveedor con ventas registradas',
-      });
+    if (stock) {
+      // Calculate remaining purchases after removing this one
+      const remainingCompras = stock.cantidadComprada - compra.cantidad;
+      
+      // If sales exceed remaining purchases, deletion is not allowed
+      if (stock.cantidadVendida > remainingCompras) {
+        return res.status(400).json({ 
+          error: 'No se puede eliminar esta compra porque quedarían ventas sin stock de origen' 
+        });
+      }
     }
 
     await comprasCollection.deleteOne({ _id: new ObjectId(id) });
@@ -760,6 +781,7 @@ app.get('/api/dashboard/charts', async (req, res) => {
         'Gentech': 'hsl(217, 71%, 35%)',
         'GoldNutrition': 'hsl(45, 93%, 47%)',
         'Growsbar': 'hsl(0, 0%, 45%)',
+        'Sin marca': 'hsl(0, 0%, 83%)',
       };
 
       const chartData = Object.entries(brandSales)

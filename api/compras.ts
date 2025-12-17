@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getComprasCollection, getVentasCollection, updateStockAfterCompra,revertStockAfterDeleteCompra, adjustStockAfterUpdateCompra, CompraDB } from '../src/lib/mongodb/models.js';
+import { getComprasCollection, getVentasCollection, getStockCollection, updateStockAfterCompra, revertStockAfterDeleteCompra, adjustStockAfterUpdateCompra, CompraDB } from '../src/lib/mongodb/models.js';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -134,17 +134,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(404).json({ error: 'Compra not found' });
       }
 
-      // Check if this product-provider has sales
-      const ventasCollection = await getVentasCollection();
-      const hasSales = await ventasCollection.findOne({ 
+      // Check if removing this compra would leave enough stock to cover existing sales
+      const stockCollection = await getStockCollection();
+      const stock = await stockCollection.findOne({ 
         producto: compra.producto, 
         proveedor: compra.proveedor 
       });
 
-      if (hasSales) {
-        return res.status(400).json({ 
-          error: 'No se puede eliminar una compra de un producto-proveedor con ventas registradas' 
-        });
+      if (stock) {
+        // Calculate remaining purchases after removing this one
+        const remainingCompras = stock.cantidadComprada - compra.cantidad;
+        
+        // If sales exceed remaining purchases, deletion is not allowed
+        if (stock.cantidadVendida > remainingCompras) {
+          return res.status(400).json({ 
+            error: 'No se puede eliminar esta compra porque quedarían ventas sin stock de origen' 
+          });
+        }
       }
 
       await comprasCollection.deleteOne({ _id: new ObjectId(id) });

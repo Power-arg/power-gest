@@ -85,9 +85,9 @@ export async function updateStockAfterCompra(
   cantidadComprada: number
 ) {
   const stockCollection = await getStockCollection();
-  
+
   const existingStock = await stockCollection.findOne({ producto, proveedor });
-  
+
   if (existingStock) {
     await stockCollection.updateOne(
       { producto, proveedor },
@@ -119,9 +119,9 @@ export async function updateStockAfterVenta(
   precioUnitarioVenta: number
 ) {
   const stockCollection = await getStockCollection();
-  
+
   const existingStock = await stockCollection.findOne({ producto, proveedor });
-  
+
   if (existingStock) {
     await stockCollection.updateOne(
       { producto, proveedor },
@@ -156,17 +156,27 @@ export async function revertStockAfterDeleteCompra(
   cantidad: number
 ) {
   const stockCollection = await getStockCollection();
-  
-  await stockCollection.updateOne(
-    { producto, proveedor },
-    {
-      $inc: {
-        cantidadComprada: -cantidad,
-        cantidadTotal: -cantidad,
-      },
-      $set: { updatedAt: new Date() },
-    }
-  );
+  const comprasCollection = await getComprasCollection();
+
+  // Check if there are any remaining compras for this producto-proveedor
+  const remainingCompras = await comprasCollection.countDocuments({ producto, proveedor });
+
+  if (remainingCompras === 0) {
+    // If no compras remain, delete the stock entry entirely
+    await stockCollection.deleteOne({ producto, proveedor });
+  } else {
+    // If other compras exist, just decrement the quantities
+    await stockCollection.updateOne(
+      { producto, proveedor },
+      {
+        $inc: {
+          cantidadComprada: -cantidad,
+          cantidadTotal: -cantidad,
+        },
+        $set: { updatedAt: new Date() },
+      }
+    );
+  }
 }
 
 export async function revertStockAfterDeleteVenta(
@@ -175,7 +185,7 @@ export async function revertStockAfterDeleteVenta(
   cantidad: number
 ) {
   const stockCollection = await getStockCollection();
-  
+
   await stockCollection.updateOne(
     { producto, proveedor },
     {

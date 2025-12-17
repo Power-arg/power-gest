@@ -43,7 +43,7 @@ export default function Compras() {
   const [formData, setFormData] = useState({
     producto: '',
     proveedor: '',
-    marca: 'ENA' as 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar',
+    marca: 'ENA' as 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Otro',
     precioUnitarioCompra: '',
     cantidad: '',
     fecha: new Date().toISOString().split('T')[0],
@@ -190,6 +190,7 @@ export default function Compras() {
     'Gentech': 'bg-blue-900 text-white',
     'GoldNutrition': 'bg-yellow-500 text-black',
     'Growsbar': 'bg-gray-600 text-white',
+    'Otro': 'bg-gray-300 text-black',
   };
 
   const columns = [
@@ -418,6 +419,12 @@ export default function Compras() {
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-gray-600"></div>
                         Growsbar
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Otro">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                        Otro
                       </div>
                     </SelectItem>
                   </SelectContent>
