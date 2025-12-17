@@ -5,7 +5,7 @@ export interface Venta {
   precioUnitarioVenta: number;
   cantidad: number;
   cliente: string;
-  metodoPago: 'efectivo' | 'tarjeta' | 'transferencia' | 'mercadopago';
+  metodoPago: 'efectivo' | 'transferencia';
   isPagado: boolean;
   usuarioACargo: string;
   fecha: string;
@@ -15,6 +15,7 @@ export interface Compra {
   id: string;
   producto: string;
   proveedor: string;
+  marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition';
   precioUnitarioCompra: number;
   cantidad: number;
   fecha: string;
@@ -24,6 +25,7 @@ export interface StockItem {
   id: string;
   producto: string;
   proveedor: string;
+  marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition';
   precioUnitarioVenta: number;
   cantidadVendida: number;
   cantidadComprada: number;
@@ -37,6 +39,8 @@ export interface DashboardStats {
   stockDisponible: number;
   ventasHoy: number;
   ventasSemana: number;
+  ingresosPercentChange: number;
+  gananciaPercentChange: number;
 }
 
 export interface ChartData {

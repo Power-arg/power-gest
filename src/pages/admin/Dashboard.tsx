@@ -3,9 +3,9 @@ import { StatsCard } from '@/components/admin/StatsCard';
 import {
   getDashboardStats,
   getSalesChartData,
-  getTopProductsData,
+  getTopBrandsData,
   getPaymentMethodsData,
-  getProvidersData,
+  getClientsData,
 } from '@/lib/api';
 import { DashboardStats, ChartData } from '@/types/admin';
 import {
@@ -13,7 +13,6 @@ import {
   ShoppingBag,
   TrendingUp,
   Package,
-  Calendar,
   CalendarDays,
 } from 'lucide-react';
 import {
@@ -38,26 +37,26 @@ const formatCurrency = (value: number) =>
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [salesData, setSalesData] = useState<ChartData[]>([]);
-  const [topProducts, setTopProducts] = useState<ChartData[]>([]);
+  const [topBrands, setTopBrands] = useState<ChartData[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<ChartData[]>([]);
-  const [providers, setProviders] = useState<ChartData[]>([]);
+  const [clients, setClients] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsData, sales, products, payments, provs] = await Promise.all([
+        const [statsData, sales, brands, payments, clts] = await Promise.all([
           getDashboardStats(),
           getSalesChartData(),
-          getTopProductsData(),
+          getTopBrandsData(),
           getPaymentMethodsData(),
-          getProvidersData(),
+          getClientsData(),
         ]);
         setStats(statsData);
         setSalesData(sales);
-        setTopProducts(products);
+        setTopBrands(brands);
         setPaymentMethods(payments);
-        setProviders(provs);
+        setClients(clts);
       } finally {
         setLoading(false);
       }
@@ -74,71 +73,63 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
       <div className="animate-fade-up">
-        <h1 className="font-display text-3xl font-bold mb-1">Dashboard</h1>
-        <p className="text-muted-foreground">Resumen general del negocio</p>
+        <h1 className="font-display text-2xl md:text-3xl font-bold mb-1">Dashboard</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Resumen general de power</p>
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <StatsCard
           title="Total Ingresos"
           value={formatCurrency(stats?.totalIngresos ?? 0)}
           icon={DollarSign}
-          trend="up"
-          trendValue="+12%"
+          iconColor="text-green-500"
           className="animate-fade-up stagger-1"
         />
         <StatsCard
           title="Total Compras"
           value={formatCurrency(stats?.totalCompras ?? 0)}
           icon={ShoppingBag}
+          iconColor="text-red-500"
           className="animate-fade-up stagger-2"
         />
         <StatsCard
           title="Ganancia Neta"
           value={formatCurrency(stats?.gananciaNet ?? 0)}
           icon={TrendingUp}
-          trend="up"
-          trendValue="+8%"
+          iconColor="text-blue-500"
           className="animate-fade-up stagger-3"
         />
         <StatsCard
           title="Stock Disponible"
           value={stats?.stockDisponible ?? 0}
-          subtitle="unidades"
           icon={Package}
+          iconColor="text-purple-500"
           className="animate-fade-up stagger-4"
-        />
-        <StatsCard
-          title="Ventas Hoy"
-          value={formatCurrency(stats?.ventasHoy ?? 0)}
-          icon={Calendar}
-          className="animate-fade-up stagger-5"
         />
         <StatsCard
           title="Ventas Semana"
           value={formatCurrency(stats?.ventasSemana ?? 0)}
           icon={CalendarDays}
-          trend="up"
-          trendValue="+15%"
+          iconColor="text-orange-500"
           className="animate-fade-up"
-          style={{ animationDelay: '0.6s' }}
+          style={{ animationDelay: '0.5s' }}
         />
       </div>
 
       {/* Charts row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales over time */}
-        <div className="glass-card p-6 animate-fade-up" style={{ animationDelay: '0.3s' }}>
-          <h3 className="font-display text-lg font-semibold mb-4">Ventas vs Compras</h3>
-          <div className="h-72">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        {/* Sales over time - Hidden on mobile */}
+        <div className="hidden md:block glass-card p-4 md:p-6 animate-fade-up" style={{ animationDelay: '0.3s' }}>
+          <h3 className="font-display text-base md:text-lg font-semibold mb-4">Ventas vs Compras</h3>
+          <div className="h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={salesData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 20%)" />
-                <XAxis dataKey="name" stroke="hsl(0 0% 50%)" fontSize={12} />
-                <YAxis stroke="hsl(0 0% 50%)" fontSize={12} tickFormatter={(v) => `$${v/1000}k`} />
+                <XAxis dataKey="name" stroke="hsl(0 0% 50%)" fontSize={11} />
+                <YAxis stroke="hsl(0 0% 50%)" fontSize={11} tickFormatter={(v) => `$${v/1000}k`} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'hsl(0 0% 10%)',
@@ -148,7 +139,7 @@ export default function Dashboard() {
                   labelStyle={{ color: 'hsl(0 0% 90%)' }}
                   formatter={(value: number) => formatCurrency(value)}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 <Line
                   type="monotone"
                   dataKey="ventas"
@@ -170,48 +161,95 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Top products */}
-        <div className="glass-card p-6 animate-fade-up" style={{ animationDelay: '0.4s' }}>
-          <h3 className="font-display text-lg font-semibold mb-4">Productos más vendidos</h3>
-          <div className="h-72">
+        {/* Top brands */}
+        <div className="glass-card p-4 md:p-6 animate-fade-up" style={{ animationDelay: '0.4s' }}>
+          <h3 className="font-display text-base md:text-lg font-semibold mb-4">Marcas más vendidas</h3>
+          {/* Desktop - Vertical bar chart with legend */}
+          <div className="hidden md:block h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topProducts} layout="vertical">
+              <BarChart data={topBrands}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 20%)" />
-                <XAxis type="number" stroke="hsl(0 0% 50%)" fontSize={12} />
-                <YAxis dataKey="name" type="category" stroke="hsl(0 0% 50%)" fontSize={11} width={100} />
+                <XAxis dataKey="name" stroke="hsl(0 0% 50%)" fontSize={11} />
+                <YAxis stroke="hsl(0 0% 50%)" fontSize={11} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'hsl(0 0% 10%)',
                     border: '1px solid hsl(0 0% 20%)',
                     borderRadius: '8px',
                   }}
-                  labelStyle={{ color: 'hsl(0 0% 90%)' }}
+                  labelStyle={{ color: 'white' }}
+                  itemStyle={{ color: 'white' }}
                 />
-                <Bar dataKey="value" fill="hsl(0 0% 80%)" radius={[0, 4, 4, 0]} name="Unidades" />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {topBrands.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill as string} />
+                  ))}
+                </Bar>
               </BarChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Mobile - Pie chart */}
+          <div className="md:hidden h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={topBrands}
+                  cx="50%"
+                  cy="40%"
+                  innerRadius={35}
+                  outerRadius={65}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={false}
+                >
+                  {topBrands.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill as string} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(0 0% 10%)',
+                    border: '1px solid hsl(0 0% 20%)',
+                    borderRadius: '8px',
+                  }}
+                  labelStyle={{ color: 'white' }}
+                  itemStyle={{ color: 'white' }}
+                />
+                <Legend 
+                  wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
+                  iconType="circle"
+                  formatter={(value, entry: any) => {
+                    const total = topBrands.reduce((sum, item) => sum + item.value, 0);
+                    const percent = ((entry.payload.value / total) * 100).toFixed(0);
+                    return <span style={{ color: 'hsl(0, 0%, 80%)' }}>{value} ({percent}%)</span>;
+                  }}
+                />
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
       {/* Charts row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Payment methods */}
-        <div className="glass-card p-6 animate-fade-up" style={{ animationDelay: '0.5s' }}>
-          <h3 className="font-display text-lg font-semibold mb-4">Métodos de pago</h3>
-          <div className="h-72">
+        <div className="glass-card p-4 md:p-6 animate-fade-up" style={{ animationDelay: '0.5s' }}>
+          <h3 className="font-display text-base md:text-lg font-semibold mb-4">Métodos de pago</h3>
+          {/* Desktop */}
+          <div className="hidden md:block h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={paymentMethods}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
+                  innerRadius={50}
+                  outerRadius={90}
                   paddingAngle={2}
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   labelLine={false}
+                  style={{ fontSize: '12px' }}
                 >
                   {paymentMethods.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill as string} />
@@ -223,30 +261,28 @@ export default function Dashboard() {
                     border: '1px solid hsl(0 0% 20%)',
                     borderRadius: '8px',
                   }}
+                  labelStyle={{ color: 'white' }}
+                  itemStyle={{ color: 'white' }}
+                  formatter={(value: number) => formatCurrency(value)}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
-        {/* Providers */}
-        <div className="glass-card p-6 animate-fade-up" style={{ animationDelay: '0.6s' }}>
-          <h3 className="font-display text-lg font-semibold mb-4">Proveedores principales</h3>
-          <div className="h-72">
+          {/* Mobile */}
+          <div className="md:hidden h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={providers}
+                  data={paymentMethods}
                   cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
+                  cy="40%"
+                  innerRadius={35}
+                  outerRadius={65}
                   paddingAngle={2}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  labelLine={false}
+                  label={false}
                 >
-                  {providers.map((entry, index) => (
+                  {paymentMethods.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill as string} />
                   ))}
                 </Pie>
@@ -255,6 +291,96 @@ export default function Dashboard() {
                     backgroundColor: 'hsl(0 0% 10%)',
                     border: '1px solid hsl(0 0% 20%)',
                     borderRadius: '8px',
+                  }}
+                  labelStyle={{ color: 'white' }}
+                  itemStyle={{ color: 'white' }}
+                  formatter={(value: number) => formatCurrency(value)}
+                />
+                <Legend 
+                  wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
+                  iconType="circle"
+                  formatter={(value, entry: any) => {
+                    const total = paymentMethods.reduce((sum, item) => sum + item.value, 0);
+                    const percent = ((entry.payload.value / total) * 100).toFixed(0);
+                    return <span style={{ color: 'hsl(0, 0%, 80%)' }}>{value} ({percent}%)</span>;
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Clients */}
+        <div className="glass-card p-4 md:p-6 animate-fade-up" style={{ animationDelay: '0.6s' }}>
+          <h3 className="font-display text-base md:text-lg font-semibold mb-4">Clientes principales</h3>
+          {/* Desktop */}
+          <div className="hidden md:block h-64 md:h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={clients}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  labelLine={false}
+                  style={{ fontSize: '12px' }}
+                >
+                  {clients.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill as string} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(0 0% 10%)',
+                    border: '1px solid hsl(0 0% 20%)',
+                    borderRadius: '8px',
+                  }}
+                  labelStyle={{ color: 'white' }}
+                  itemStyle={{ color: 'white' }}
+                  formatter={(value: number) => formatCurrency(value)}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Mobile */}
+          <div className="md:hidden h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={clients}
+                  cx="50%"
+                  cy="40%"
+                  innerRadius={35}
+                  outerRadius={65}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={false}
+                >
+                  {clients.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill as string} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(0 0% 10%)',
+                    border: '1px solid hsl(0 0% 20%)',
+                    borderRadius: '8px',
+                  }}
+                  labelStyle={{ color: 'white' }}
+                  itemStyle={{ color: 'white' }}
+                  formatter={(value: number) => formatCurrency(value)}
+                />
+                <Legend 
+                  wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
+                  iconType="circle"
+                  formatter={(value, entry: any) => {
+                    const total = clients.reduce((sum, item) => sum + item.value, 0);
+                    const percent = ((entry.payload.value / total) * 100).toFixed(0);
+                    return <span style={{ color: 'hsl(0, 0%, 80%)' }}>{value} ({percent}%)</span>;
                   }}
                 />
               </PieChart>

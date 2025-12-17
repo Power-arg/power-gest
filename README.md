@@ -1,73 +1,51 @@
-# Welcome to your Lovable project
+# Power Gest - Sistema de Gestión de Inventario
 
-## Project info
+Sistema completo de gestión de inventario con frontend en React/TypeScript y backend con MongoDB.
 
-**URL**: https://lovable.dev/projects/65d6809a-e3ef-47ba-823e-2ca34fdc46b0
+## 🚀 Inicio Rápido
+1. Crea `.env.local` con tu `MONGODB_URI` de MongoDB Atlas
+2. Ejecuta `npm install`
+3. Ejecuta `npm run init-password` (solo una vez)
+4. Ejecuta `npm run dev`
+5. Abre http://localhost:8080
+6. Login con contraseña: `power2024`
 
-## How can I edit this code?
+## 📋 Características
 
-There are several ways of editing your application.
+- ✅ **Autenticación** con contraseña hasheada (bcrypt)
+- ✅ **Gestión de Compras** con validaciones y selección de productos existentes
+- ✅ **Gestión de Ventas** con control automático de stock
+- ✅ **Inventario** con actualización en tiempo real
+- ✅ **Dashboard** con gráficos y estadísticas
+- ✅ **Responsive** para desktop y móvil
+- ✅ **Deploy** listo para Vercel con MongoDB Atlas
 
-**Use Lovable**
+## 🛠️ Tecnologías
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/65d6809a-e3ef-47ba-823e-2ca34fdc46b0) and start prompting.
+- **Frontend:** React 18, TypeScript, Vite, TailwindCSS, Shadcn/ui, Recharts
+- **Backend Dev:** Express + MongoDB
+- **Backend Prod:** Vercel Serverless Functions
+- **Base de Datos:** MongoDB Atlas
+- **Autenticación:** bcryptjs
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📁 Estructura del Proyecto
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+power-gest/
+├── api/ # API routes para Vercel (producción)
+├── src/ # Frontend React
+│   ├── components/ # Componentes reutilizables
+│   ├── pages/ # Páginas de la aplicación
+│   ├── lib/ # Utilidades y configuración
+│   └── types/ # Tipos TypeScript
+├── scripts/ # Scripts de utilidad
+├── server.mjs # Servidor de desarrollo local
+├── .env.local # Variables de entorno (NO committear)
 ```
 
-**Edit a file directly in GitHub**
+## 🔐 Seguridad
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/65d6809a-e3ef-47ba-823e-2ca34fdc46b0) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- Contraseñas hasheadas con bcrypt (10 rounds)
+- Variables de entorno para credenciales sensibles
+- CORS configurado correctamente
+- Validaciones en frontend y backend

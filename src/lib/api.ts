@@ -1,298 +1,269 @@
 import { Venta, Compra, StockItem, DashboardStats, ChartData } from '@/types/admin';
 
 // ============================================
-// MOCK API - Ready to connect to Google Sheets
+// API BASE URL
 // ============================================
-// Replace these functions with actual Google Sheets API calls
-// or Google Apps Script Web App endpoints
-
-const MOCK_PASSWORD = 'power2024'; // Replace with Google Sheets validation
-
-// Simulated delay for realistic API behavior
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // ============================================
 // AUTHENTICATION
 // ============================================
 export async function validatePassword(password: string): Promise<boolean> {
-  await delay(500);
-  // TODO: Replace with Google Sheets API call
-  // Example: fetch('YOUR_GOOGLE_APPS_SCRIPT_URL?action=validatePassword&password=' + password)
-  return password === MOCK_PASSWORD;
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Authentication failed');
+    }
+
+    const data = await response.json();
+    return data.valid;
+  } catch (error) {
+    console.error('Validate password error:', error);
+    return false;
+  }
 }
 
 // ============================================
 // VENTAS CRUD
 // ============================================
-let mockVentas: Venta[] = [
-  {
-    id: '1',
-    producto: 'Whey Protein Gold Standard',
-    proveedor: 'Optimum Nutrition',
-    precioUnitarioVenta: 45000,
-    cantidad: 2,
-    cliente: 'Juan Pérez',
-    metodoPago: 'tarjeta',
-    isPagado: true,
-    usuarioACargo: 'Admin',
-    fecha: '2024-01-15',
-  },
-  {
-    id: '2',
-    producto: 'Creatina Monohidrato 500g',
-    proveedor: 'Universal Nutrition',
-    precioUnitarioVenta: 18000,
-    cantidad: 3,
-    cliente: 'María García',
-    metodoPago: 'efectivo',
-    isPagado: true,
-    usuarioACargo: 'Admin',
-    fecha: '2024-01-16',
-  },
-  {
-    id: '3',
-    producto: 'BCAA 2:1:1 300g',
-    proveedor: 'Muscletech',
-    precioUnitarioVenta: 22000,
-    cantidad: 1,
-    cliente: 'Carlos López',
-    metodoPago: 'transferencia',
-    isPagado: false,
-    usuarioACargo: 'Admin',
-    fecha: '2024-01-17',
-  },
-  {
-    id: '4',
-    producto: 'Pre-Workout C4',
-    proveedor: 'Cellucor',
-    precioUnitarioVenta: 28000,
-    cantidad: 2,
-    cliente: 'Ana Martínez',
-    metodoPago: 'mercadopago',
-    isPagado: true,
-    usuarioACargo: 'Admin',
-    fecha: '2024-01-18',
-  },
-];
-
 export async function getVentas(): Promise<Venta[]> {
-  await delay(300);
-  return [...mockVentas];
+  try {
+    const response = await fetch(`${API_BASE_URL}/ventas`);
+    if (!response.ok) throw new Error('Failed to fetch ventas');
+    return await response.json();
+  } catch (error) {
+    console.error('Get ventas error:', error);
+    throw error;
+  }
 }
 
 export async function createVenta(venta: Omit<Venta, 'id'>): Promise<Venta> {
-  await delay(300);
-  const newVenta = { ...venta, id: Date.now().toString() };
-  mockVentas.push(newVenta);
-  return newVenta;
+  try {
+    const response = await fetch(`${API_BASE_URL}/ventas`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(venta),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create venta');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Create venta error:', error);
+    throw error;
+  }
 }
 
 export async function updateVenta(id: string, venta: Partial<Venta>): Promise<Venta> {
-  await delay(300);
-  const index = mockVentas.findIndex(v => v.id === id);
-  if (index === -1) throw new Error('Venta not found');
-  mockVentas[index] = { ...mockVentas[index], ...venta };
-  return mockVentas[index];
+  try {
+    const response = await fetch(`${API_BASE_URL}/ventas`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, ...venta }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update venta');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Update venta error:', error);
+    throw error;
+  }
 }
 
 export async function deleteVenta(id: string): Promise<void> {
-  await delay(300);
-  mockVentas = mockVentas.filter(v => v.id !== id);
+  try {
+    const response = await fetch(`${API_BASE_URL}/ventas?id=${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to delete venta');
+    }
+  } catch (error) {
+    console.error('Delete venta error:', error);
+    throw error;
+  }
 }
 
 // ============================================
 // COMPRAS CRUD
 // ============================================
-let mockCompras: Compra[] = [
-  {
-    id: '1',
-    producto: 'Whey Protein Gold Standard',
-    proveedor: 'Optimum Nutrition',
-    precioUnitarioCompra: 32000,
-    cantidad: 10,
-    fecha: '2024-01-10',
-  },
-  {
-    id: '2',
-    producto: 'Creatina Monohidrato 500g',
-    proveedor: 'Universal Nutrition',
-    precioUnitarioCompra: 12000,
-    cantidad: 15,
-    fecha: '2024-01-11',
-  },
-  {
-    id: '3',
-    producto: 'BCAA 2:1:1 300g',
-    proveedor: 'Muscletech',
-    precioUnitarioCompra: 15000,
-    cantidad: 8,
-    fecha: '2024-01-12',
-  },
-  {
-    id: '4',
-    producto: 'Pre-Workout C4',
-    proveedor: 'Cellucor',
-    precioUnitarioCompra: 20000,
-    cantidad: 12,
-    fecha: '2024-01-13',
-  },
-];
-
 export async function getCompras(): Promise<Compra[]> {
-  await delay(300);
-  return [...mockCompras];
+  try {
+    const response = await fetch(`${API_BASE_URL}/compras`);
+    if (!response.ok) throw new Error('Failed to fetch compras');
+    return await response.json();
+  } catch (error) {
+    console.error('Get compras error:', error);
+    throw error;
+  }
 }
 
 export async function createCompra(compra: Omit<Compra, 'id'>): Promise<Compra> {
-  await delay(300);
-  const newCompra = { ...compra, id: Date.now().toString() };
-  mockCompras.push(newCompra);
-  return newCompra;
+  try {
+    const response = await fetch(`${API_BASE_URL}/compras`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(compra),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create compra');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Create compra error:', error);
+    throw error;
+  }
 }
 
 export async function updateCompra(id: string, compra: Partial<Compra>): Promise<Compra> {
-  await delay(300);
-  const index = mockCompras.findIndex(c => c.id === id);
-  if (index === -1) throw new Error('Compra not found');
-  mockCompras[index] = { ...mockCompras[index], ...compra };
-  return mockCompras[index];
+  try {
+    const response = await fetch(`${API_BASE_URL}/compras`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, ...compra }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update compra');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Update compra error:', error);
+    throw error;
+  }
 }
 
 export async function deleteCompra(id: string): Promise<void> {
-  await delay(300);
-  mockCompras = mockCompras.filter(c => c.id !== id);
+  try {
+    const response = await fetch(`${API_BASE_URL}/compras?id=${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to delete compra');
+    }
+  } catch (error) {
+    console.error('Delete compra error:', error);
+    throw error;
+  }
 }
 
 // ============================================
-// STOCK (Calculated)
+// STOCK
 // ============================================
 export async function getStock(): Promise<StockItem[]> {
-  await delay(300);
-  const ventas = await getVentas();
-  const compras = await getCompras();
-
-  const stockMap = new Map<string, StockItem>();
-
-  // Process purchases
-  compras.forEach(compra => {
-    const key = `${compra.producto}-${compra.proveedor}`;
-    const existing = stockMap.get(key);
-    if (existing) {
-      existing.cantidadComprada += compra.cantidad;
-      existing.cantidadTotal = existing.cantidadComprada - existing.cantidadVendida;
-    } else {
-      stockMap.set(key, {
-        id: key,
-        producto: compra.producto,
-        proveedor: compra.proveedor,
-        precioUnitarioVenta: 0,
-        cantidadVendida: 0,
-        cantidadComprada: compra.cantidad,
-        cantidadTotal: compra.cantidad,
-      });
-    }
-  });
-
-  // Process sales
-  ventas.forEach(venta => {
-    const key = `${venta.producto}-${venta.proveedor}`;
-    const existing = stockMap.get(key);
-    if (existing) {
-      existing.cantidadVendida += venta.cantidad;
-      existing.precioUnitarioVenta = venta.precioUnitarioVenta;
-      existing.cantidadTotal = existing.cantidadComprada - existing.cantidadVendida;
-    } else {
-      stockMap.set(key, {
-        id: key,
-        producto: venta.producto,
-        proveedor: venta.proveedor,
-        precioUnitarioVenta: venta.precioUnitarioVenta,
-        cantidadVendida: venta.cantidad,
-        cantidadComprada: 0,
-        cantidadTotal: -venta.cantidad,
-      });
-    }
-  });
-
-  return Array.from(stockMap.values());
+  try {
+    const response = await fetch(`${API_BASE_URL}/stock`);
+    if (!response.ok) throw new Error('Failed to fetch stock');
+    return await response.json();
+  } catch (error) {
+    console.error('Get stock error:', error);
+    throw error;
+  }
 }
 
 // ============================================
 // DASHBOARD STATS
 // ============================================
 export async function getDashboardStats(): Promise<DashboardStats> {
-  await delay(300);
-  const ventas = await getVentas();
-  const compras = await getCompras();
-  const stock = await getStock();
-
-  const totalIngresos = ventas.reduce((acc, v) => acc + (v.precioUnitarioVenta * v.cantidad), 0);
-  const totalCompras = compras.reduce((acc, c) => acc + (c.precioUnitarioCompra * c.cantidad), 0);
-  const stockDisponible = stock.reduce((acc, s) => acc + s.cantidadTotal, 0);
-
-  const today = new Date().toISOString().split('T')[0];
-  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-  const ventasHoy = ventas
-    .filter(v => v.fecha === today)
-    .reduce((acc, v) => acc + (v.precioUnitarioVenta * v.cantidad), 0);
-
-  const ventasSemana = ventas
-    .filter(v => v.fecha >= weekAgo)
-    .reduce((acc, v) => acc + (v.precioUnitarioVenta * v.cantidad), 0);
-
-  return {
-    totalIngresos,
-    totalCompras,
-    gananciaNet: totalIngresos - totalCompras,
-    stockDisponible,
-    ventasHoy,
-    ventasSemana,
-  };
+  try {
+    const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
+    if (!response.ok) throw new Error('Failed to fetch dashboard stats');
+    return await response.json();
+  } catch (error) {
+    console.error('Get dashboard stats error:', error);
+    throw error;
+  }
 }
 
 // ============================================
 // CHART DATA
 // ============================================
 export async function getSalesChartData(): Promise<ChartData[]> {
-  await delay(200);
-  return [
-    { name: 'Ene', ventas: 125000, compras: 85000 },
-    { name: 'Feb', ventas: 148000, compras: 92000 },
-    { name: 'Mar', ventas: 167000, compras: 98000 },
-    { name: 'Abr', ventas: 189000, compras: 105000 },
-    { name: 'May', ventas: 212000, compras: 115000 },
-    { name: 'Jun', ventas: 245000, compras: 128000 },
-  ];
+  try {
+    const response = await fetch(`${API_BASE_URL}/dashboard/charts?type=sales`);
+    if (!response.ok) throw new Error('Failed to fetch sales chart data');
+    return await response.json();
+  } catch (error) {
+    console.error('Get sales chart data error:', error);
+    return [];
+  }
 }
 
 export async function getTopProductsData(): Promise<ChartData[]> {
-  await delay(200);
-  return [
-    { name: 'Whey Protein', value: 45 },
-    { name: 'Creatina', value: 32 },
-    { name: 'BCAA', value: 28 },
-    { name: 'Pre-Workout', value: 24 },
-    { name: 'Glutamina', value: 18 },
-  ];
+  try {
+    const response = await fetch(`${API_BASE_URL}/dashboard/charts?type=top-products`);
+    if (!response.ok) throw new Error('Failed to fetch top products data');
+    return await response.json();
+  } catch (error) {
+    console.error('Get top products data error:', error);
+    return [];
+  }
+}
+
+export async function getTopBrandsData(): Promise<ChartData[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/dashboard/charts?type=top-brands`);
+    if (!response.ok) throw new Error('Failed to fetch top brands data');
+    return await response.json();
+  } catch (error) {
+    console.error('Get top brands data error:', error);
+    return [];
+  }
 }
 
 export async function getPaymentMethodsData(): Promise<ChartData[]> {
-  await delay(200);
-  return [
-    { name: 'Tarjeta', value: 35, fill: 'hsl(0, 0%, 90%)' },
-    { name: 'Efectivo', value: 28, fill: 'hsl(0, 0%, 70%)' },
-    { name: 'Transferencia', value: 22, fill: 'hsl(0, 0%, 50%)' },
-    { name: 'MercadoPago', value: 15, fill: 'hsl(0, 0%, 30%)' },
-  ];
+  try {
+    const response = await fetch(`${API_BASE_URL}/dashboard/charts?type=payment-methods`);
+    if (!response.ok) throw new Error('Failed to fetch payment methods data');
+    return await response.json();
+  } catch (error) {
+    console.error('Get payment methods data error:', error);
+    return [];
+  }
 }
 
-export async function getProvidersData(): Promise<ChartData[]> {
-  await delay(200);
-  return [
-    { name: 'Optimum Nutrition', value: 40, fill: 'hsl(0, 0%, 85%)' },
-    { name: 'Muscletech', value: 25, fill: 'hsl(0, 0%, 65%)' },
-    { name: 'Universal', value: 20, fill: 'hsl(0, 0%, 45%)' },
-    { name: 'Cellucor', value: 15, fill: 'hsl(0, 0%, 25%)' },
-  ];
+export async function getClientsData(): Promise<ChartData[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/dashboard/charts?type=clients`);
+    if (!response.ok) throw new Error('Failed to fetch clients data');
+    return await response.json();
+  } catch (error) {
+    console.error('Get clients data error:', error);
+    return [];
+  }
+}
+
+// ============================================
+// PRODUCTOS (for dropdowns)
+// ============================================
+export async function getProductos(): Promise<{ producto: string; proveedor: string; stockDisponible: number; precioUnitarioVenta: number; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' }[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/productos`);
+    if (!response.ok) throw new Error('Failed to fetch productos');
+    return await response.json();
+  } catch (error) {
+    console.error('Get productos error:', error);
+    return [];
+  }
 }

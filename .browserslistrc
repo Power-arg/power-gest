@@ -1,0 +1,11 @@
+# Browsers that we support
+
+last 2 versions
+> 0.5%
+not dead
+chrome >= 90
+firefox >= 88
+safari >= 14
+edge >= 90
+opera >= 76
+ios_saf >= 14

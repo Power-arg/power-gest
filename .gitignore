@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Environment variables
+.env
+.env.local
+.env.production
+.vercel
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -358,3 +364,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+.env*.local

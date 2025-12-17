@@ -10,6 +10,7 @@ interface StatsCardProps {
   trendValue?: string;
   className?: string;
   style?: React.CSSProperties;
+  iconColor?: string;
 }
 
 export function StatsCard({
@@ -21,12 +22,13 @@ export function StatsCard({
   trendValue,
   className,
   style,
+  iconColor = 'text-foreground/70',
 }: StatsCardProps) {
   return (
     <div className={cn('stat-card', className)} style={style}>
       <div className="flex items-start justify-between mb-4">
         <div className="p-2 bg-secondary rounded-lg">
-          <Icon className="h-5 w-5 text-foreground/70" />
+          <Icon className={cn('h-5 w-5', iconColor)} />
         </div>
         {trend && trendValue && (
           <span
