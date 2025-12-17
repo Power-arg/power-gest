@@ -30,6 +30,7 @@ export default function Stock() {
     'Body Advance': 'bg-red-500 text-white',
     'Gentech': 'bg-blue-900 text-white',
     'GoldNutrition': 'bg-yellow-500 text-black',
+    'Growsbar': 'bg-gray-600 text-white',
   };
 
   const columns = [

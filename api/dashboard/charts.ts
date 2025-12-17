@@ -122,6 +122,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Body Advance': 'hsl(0, 84%, 60%)',
           'Gentech': 'hsl(217, 71%, 35%)',
           'GoldNutrition': 'hsl(45, 93%, 47%)',
+          'Growsbar': 'hsl(0, 0%, 45%)',
         };
 
         const chartData = Object.entries(brandSales)
