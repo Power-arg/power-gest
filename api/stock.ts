@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const stock = await stockCollection.find({}).sort({ producto: 1 }).toArray();
 
       // Get compras collection to fetch marca
-      const { getComprasCollection } = await import('../src/lib/mongodb/models');
+      const { getComprasCollection } = await import('../src/lib/mongodb/models.js');
       const comprasCollection = await getComprasCollection();
 
       const formatted = await Promise.all(
