@@ -43,7 +43,7 @@ export default function Compras() {
   const [formData, setFormData] = useState({
     producto: '',
     proveedor: '',
-    marca: 'ENA' as 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Otro',
+    marca: 'ENA' as 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Otro',
     precioUnitarioCompra: '',
     cantidad: '',
     fecha: new Date().toISOString().split('T')[0],
@@ -52,7 +52,9 @@ export default function Compras() {
   const fetchCompras = async () => {
     try {
       const data = await getCompras();
-      setCompras(data);
+      // Ordenar por fecha de más reciente a más antigua
+      const sorted = data.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+      setCompras(sorted);
     } catch (error: any) {
       toast({ title: 'Error al cargar compras', description: error.message, variant: 'destructive' });
     } finally {
@@ -149,7 +151,7 @@ export default function Compras() {
 
     try {
       // Validaciones
-      if (!formData.producto || !formData.proveedor || !formData.marca || !formData.precioUnitarioCompra || !formData.cantidad) {
+      if (!formData.producto || !formData.proveedor || !formData.marca || formData.precioUnitarioCompra === '' || !formData.cantidad) {
         toast({ title: 'Todos los campos son requeridos', variant: 'destructive' });
         setSubmitting(false);
         return;
@@ -190,6 +192,7 @@ export default function Compras() {
     'Gentech': 'bg-blue-900 text-white',
     'GoldNutrition': 'bg-yellow-500 text-black',
     'Growsbar': 'bg-gray-600 text-white',
+    'Crudda': 'bg-orange-500 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 
@@ -419,6 +422,12 @@ export default function Compras() {
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-gray-600"></div>
                         Growsbar
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Crudda">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                        Crudda
                       </div>
                     </SelectItem>
                     <SelectItem value="Otro">

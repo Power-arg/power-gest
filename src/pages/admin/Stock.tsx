@@ -16,7 +16,13 @@ export default function Stock() {
     const fetchStock = async () => {
       try {
         const data = await getStock();
-        setStock(data);
+        // Ordenar por marca y luego por producto
+        const sorted = data.sort((a, b) => {
+          const marcaCompare = a.marca.localeCompare(b.marca);
+          if (marcaCompare !== 0) return marcaCompare;
+          return a.producto.localeCompare(b.producto);
+        });
+        setStock(sorted);
       } finally {
         setLoading(false);
       }
@@ -31,6 +37,7 @@ export default function Stock() {
     'Gentech': 'bg-blue-900 text-white',
     'GoldNutrition': 'bg-yellow-500 text-black',
     'Growsbar': 'bg-gray-600 text-white',
+    'Crudda': 'bg-orange-500 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 
@@ -122,10 +129,11 @@ export default function Stock() {
   ];
 
   // Summary stats
-  const totalProducts = stock.length;
-  const totalUnits = stock.reduce((acc, s) => acc + Math.max(0, s.cantidadTotal), 0);
-  const lowStockCount = stock.filter((s) => s.cantidadTotal >= 1 && s.cantidadTotal <= 2).length;
-  const outOfStockCount = stock.filter((s) => s.cantidadTotal === 0).length;
+  const filteredStock = stock.filter(s => s.producto !== 'Dinero de caja');
+  const totalProducts = filteredStock.length;
+  const totalUnits = filteredStock.reduce((acc, s) => acc + Math.max(0, s.cantidadTotal), 0);
+  const lowStockCount = filteredStock.filter((s) => s.cantidadTotal >= 1 && s.cantidadTotal <= 2).length;
+  const outOfStockCount = filteredStock.filter((s) => s.cantidadTotal === 0).length;
 
   if (loading) {
     return (
@@ -178,17 +186,17 @@ export default function Stock() {
 
       {/* Desktop Table View */}
       <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        <DataTable data={stock} columns={columns} searchKey="producto" />
+        <DataTable data={stock.filter(s => s.producto !== 'Dinero de caja')} columns={columns} searchKey="producto" />
       </div>
 
       {/* Mobile Cards View */}
       <div className="md:hidden space-y-4 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        {stock.length === 0 ? (
+        {stock.filter(s => s.producto !== 'Dinero de caja').length === 0 ? (
           <div className="glass-card p-6 text-center text-muted-foreground">
             No hay productos en stock
           </div>
         ) : (
-          stock.map((item) => {
+          stock.filter(s => s.producto !== 'Dinero de caja').map((item) => {
             const isLow = item.cantidadTotal >= 1 && item.cantidadTotal <= 2;
             const isOut = item.cantidadTotal === 0;
             return (

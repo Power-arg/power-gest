@@ -42,11 +42,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         0
       );
 
-      // Calculate stock disponible (only positive stock)
-      const stockDisponible = stock.reduce(
-        (acc, s) => acc + Math.max(0, s.cantidadTotal),
-        0
-      );
+      // Calculate stock disponible (only positive stock, excluding "Dinero de caja")
+      const stockDisponible = stock
+        .filter(s => s.producto !== 'Dinero de caja')
+        .reduce(
+          (acc, s) => acc + Math.max(0, s.cantidadTotal),
+          0
+        );
 
       // Today's date
       const today = new Date();
@@ -94,7 +96,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({
         totalIngresos,
         totalCompras,
-        gananciaNet: totalIngresos - totalCompras,
         stockDisponible,
         ventasHoy,
         ventasSemana,

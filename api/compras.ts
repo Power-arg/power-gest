@@ -39,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'POST') {
       const { producto, proveedor, marca, precioUnitarioCompra, cantidad, fecha } = req.body;
 
-      if (!producto || !proveedor || !marca || !precioUnitarioCompra || !cantidad || !fecha) {
+      if (!producto || !proveedor || !marca || precioUnitarioCompra === undefined || precioUnitarioCompra === null || !cantidad || !fecha) {
         return res.status(400).json({ error: 'All fields are required' });
       }
 

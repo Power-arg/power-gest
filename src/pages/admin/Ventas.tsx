@@ -62,7 +62,9 @@ export default function Ventas() {
   const fetchVentas = async () => {
     try {
       const data = await getVentas();
-      setVentas(data);
+      // Ordenar por fecha de más reciente a más antigua
+      const sorted = data.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+      setVentas(sorted);
     } catch (error: any) {
       toast({ title: 'Error al cargar ventas', description: error.message, variant: 'destructive' });
     } finally {
@@ -222,6 +224,7 @@ export default function Ventas() {
     'Gentech': 'bg-blue-900 text-white',
     'GoldNutrition': 'bg-yellow-500 text-black',
     'Growsbar': 'bg-gray-600 text-white',
+    'Crudda': 'bg-orange-500 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 

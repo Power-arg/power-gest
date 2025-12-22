@@ -122,12 +122,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Body Advance': 'hsl(0, 84%, 60%)',
           'Gentech': 'hsl(217, 71%, 35%)',
           'GoldNutrition': 'hsl(45, 93%, 47%)',
-          'Growsbar': 'hsl(0, 0%, 45%)',
+          'Growsbar': 'hsl(0, 0%, 55%)',
+          'Crudda': 'hsl(30, 100%, 50%)',
           'Otro': 'hsl(0, 0%, 83%)',
         };
 
         const chartData = Object.entries(brandSales)
           .sort(([, a], [, b]) => b - a)
+          .filter(([name]) => name !== 'Otro')
           .map(([name, value]) => ({
             name,
             value,

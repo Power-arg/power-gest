@@ -11,7 +11,6 @@ import { DashboardStats, ChartData } from '@/types/admin';
 import {
   DollarSign,
   ShoppingBag,
-  TrendingUp,
   Package,
   CalendarDays,
 } from 'lucide-react';
@@ -80,7 +79,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Total Ingresos"
           value={formatCurrency(stats?.totalIngresos ?? 0)}
@@ -96,26 +95,18 @@ export default function Dashboard() {
           className="animate-fade-up stagger-2"
         />
         <StatsCard
-          title="Ganancia Neta"
-          value={formatCurrency(stats?.gananciaNet ?? 0)}
-          icon={TrendingUp}
-          iconColor="text-blue-500"
-          className="animate-fade-up stagger-3"
-        />
-        <StatsCard
           title="Stock Disponible"
           value={stats?.stockDisponible ?? 0}
           icon={Package}
           iconColor="text-purple-500"
-          className="animate-fade-up stagger-4"
+          className="animate-fade-up stagger-3"
         />
         <StatsCard
           title="Ventas Semana"
           value={formatCurrency(stats?.ventasSemana ?? 0)}
           icon={CalendarDays}
           iconColor="text-orange-500"
-          className="animate-fade-up"
-          style={{ animationDelay: '0.5s' }}
+          className="animate-fade-up stagger-4"
         />
       </div>
 
