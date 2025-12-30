@@ -6,12 +6,13 @@ import {
   getTopBrandsData,
   getPaymentMethodsData,
   getClientsData,
+  getUserSalesData,
 } from '@/lib/api';
 import { DashboardStats, ChartData } from '@/types/admin';
 import {
   DollarSign,
   ShoppingBag,
-  Package,
+  User,
   CalendarDays,
 } from 'lucide-react';
 import {
@@ -39,23 +40,26 @@ export default function Dashboard() {
   const [topBrands, setTopBrands] = useState<ChartData[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<ChartData[]>([]);
   const [clients, setClients] = useState<ChartData[]>([]);
+  const [userSales, setUserSales] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsData, sales, brands, payments, clts] = await Promise.all([
+        const [statsData, sales, brands, payments, clts, users] = await Promise.all([
           getDashboardStats(),
           getSalesChartData(),
           getTopBrandsData(),
           getPaymentMethodsData(),
           getClientsData(),
+          getUserSalesData(),
         ]);
         setStats(statsData);
         setSalesData(sales);
         setTopBrands(brands);
         setPaymentMethods(payments);
         setClients(clts);
+        setUserSales(users);
       } finally {
         setLoading(false);
       }
@@ -95,17 +99,17 @@ export default function Dashboard() {
           className="animate-fade-up stagger-2"
         />
         <StatsCard
-          title="Stock Disponible"
-          value={stats?.stockDisponible ?? 0}
-          icon={Package}
-          iconColor="text-purple-500"
+          title="Ventas Fer"
+          value={formatCurrency(userSales['Fer'] ?? 0)}
+          icon={User}
+          iconColor="text-blue-500"
           className="animate-fade-up stagger-3"
         />
         <StatsCard
-          title="Ventas Semana"
-          value={formatCurrency(stats?.ventasSemana ?? 0)}
-          icon={CalendarDays}
-          iconColor="text-orange-500"
+          title="Ventas So"
+          value={formatCurrency(userSales['So'] ?? 0)}
+          icon={User}
+          iconColor="text-purple-500"
           className="animate-fade-up stagger-4"
         />
       </div>

@@ -129,7 +129,7 @@ export default function Stock() {
   ];
 
   // Summary stats
-  const filteredStock = stock.filter(s => s.producto !== 'Dinero de caja');
+  const filteredStock = stock.filter(s => s.producto !== 'Dinero de caja' && s.producto !== 'Envio');
   const totalProducts = filteredStock.length;
   const totalUnits = filteredStock.reduce((acc, s) => acc + Math.max(0, s.cantidadTotal), 0);
   const lowStockCount = filteredStock.filter((s) => s.cantidadTotal >= 1 && s.cantidadTotal <= 2).length;
@@ -186,17 +186,17 @@ export default function Stock() {
 
       {/* Desktop Table View */}
       <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        <DataTable data={stock.filter(s => s.producto !== 'Dinero de caja')} columns={columns} searchKey="producto" />
+        <DataTable data={stock.filter(s => s.producto !== 'Dinero de caja' && s.producto !== 'Envio')} columns={columns} searchKey="producto" />
       </div>
 
       {/* Mobile Cards View */}
       <div className="md:hidden space-y-4 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        {stock.filter(s => s.producto !== 'Dinero de caja').length === 0 ? (
+        {stock.filter(s => s.producto !== 'Dinero de caja' && s.producto !== 'Envio').length === 0 ? (
           <div className="glass-card p-6 text-center text-muted-foreground">
             No hay productos en stock
           </div>
         ) : (
-          stock.filter(s => s.producto !== 'Dinero de caja').map((item) => {
+          stock.filter(s => s.producto !== 'Dinero de caja' && s.producto !== 'Envio').map((item) => {
             const isLow = item.cantidadTotal >= 1 && item.cantidadTotal <= 2;
             const isOut = item.cantidadTotal === 0;
             return (

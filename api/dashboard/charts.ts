@@ -122,7 +122,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Body Advance': 'hsl(0, 84%, 60%)',
           'Gentech': 'hsl(217, 71%, 35%)',
           'GoldNutrition': 'hsl(45, 93%, 47%)',
-          'Growsbar': 'hsl(0, 0%, 55%)',
+          'Growsbar': 'hsl(215, 14%, 46%)',
           'Crudda': 'hsl(30, 100%, 50%)',
           'Otro': 'hsl(0, 0%, 83%)',
         };
@@ -183,7 +183,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           clients[v.cliente] += v.precioUnitarioVenta * v.cantidad;
         });
 
-        const colors = ['hsl(0, 0%, 85%)', 'hsl(0, 0%, 65%)', 'hsl(0, 0%, 45%)', 'hsl(0, 0%, 25%)'];
+        const colors = ['hsl(0, 0%, 85%)', 'hsl(0, 0%, 70%)', 'hsl(0, 0%, 55%)', 'hsl(0, 0%, 40%)', 'hsl(0, 0%, 25%)'];
 
         const chartData = Object.entries(clients)
           .sort(([, a], [, b]) => b - a)
@@ -195,6 +195,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }));
 
         return res.status(200).json(chartData);
+      }
+
+      if (type === 'user-sales') {
+        // User sales distribution
+        const ventasCollection = await getVentasCollection();
+        const ventas = await ventasCollection.find({}).toArray();
+
+        const userSales: { [key: string]: number } = {};
+
+        ventas.forEach((v) => {
+          if (!userSales[v.usuarioACargo]) {
+            userSales[v.usuarioACargo] = 0;
+          }
+          userSales[v.usuarioACargo] += v.precioUnitarioVenta * v.cantidad;
+        });
+
+        return res.status(200).json(userSales);
       }
 
       return res.status(400).json({ error: 'Invalid chart type' });

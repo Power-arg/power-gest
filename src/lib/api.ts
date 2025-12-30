@@ -254,6 +254,17 @@ export async function getClientsData(): Promise<ChartData[]> {
   }
 }
 
+export async function getUserSalesData(): Promise<{ [key: string]: number }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/dashboard/charts?type=user-sales`);
+    if (!response.ok) throw new Error('Failed to fetch user sales data');
+    return await response.json();
+  } catch (error) {
+    console.error('Get user sales data error:', error);
+    return {};
+  }
+}
+
 // ============================================
 // PRODUCTOS (for dropdowns)
 // ============================================
