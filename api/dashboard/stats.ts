@@ -30,11 +30,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const compras = await comprasCollection.find({}).toArray();
       const stock = await stockCollection.find({}).toArray();
 
-      // Calculate total ingresos
-      const totalIngresos = ventas.reduce(
-        (acc, v) => acc + v.precioUnitarioVenta * v.cantidad,
-        0
-      );
+      // Calculate total ingresos (only paid sales)
+      const totalIngresos = ventas
+        .filter((v) => v.isPagado === true)
+        .reduce(
+          (acc, v) => acc + v.precioUnitarioVenta * v.cantidad,
+          0
+        );
 
       // Calculate total compras
       const totalCompras = compras.reduce(
@@ -60,14 +62,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       weekAgo.setDate(weekAgo.getDate() - 7);
       const weekAgoStr = weekAgo.toISOString().split('T')[0];
 
-      // Calculate ventas hoy
+      // Calculate ventas hoy (only paid sales)
       const ventasHoy = ventas
-        .filter((v) => v.fecha === todayStr)
+        .filter((v) => v.fecha === todayStr && v.isPagado === true)
         .reduce((acc, v) => acc + v.precioUnitarioVenta * v.cantidad, 0);
 
-      // Calculate ventas semana
+      // Calculate ventas semana (only paid sales)
       const ventasSemana = ventas
-        .filter((v) => v.fecha >= weekAgoStr)
+        .filter((v) => v.fecha >= weekAgoStr && v.isPagado === true)
         .reduce((acc, v) => acc + v.precioUnitarioVenta * v.cantidad, 0);
 
       // Calculate previous week for comparison
@@ -76,7 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const twoWeeksAgoStr = twoWeeksAgo.toISOString().split('T')[0];
 
       const ventasWeekBefore = ventas
-        .filter((v) => v.fecha >= twoWeeksAgoStr && v.fecha < weekAgoStr)
+        .filter((v) => v.fecha >= twoWeeksAgoStr && v.fecha < weekAgoStr && v.isPagado === true)
         .reduce((acc, v) => acc + v.precioUnitarioVenta * v.cantidad, 0);
 
       // Calculate percentage changes
