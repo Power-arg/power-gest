@@ -199,18 +199,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (type === 'user-sales') {
-        // User sales distribution
+        // User sales distribution (only paid sales)
         const ventasCollection = await getVentasCollection();
         const ventas = await ventasCollection.find({}).toArray();
 
         const userSales: { [key: string]: number } = {};
 
-        ventas.forEach((v) => {
-          if (!userSales[v.usuarioACargo]) {
-            userSales[v.usuarioACargo] = 0;
-          }
-          userSales[v.usuarioACargo] += v.precioUnitarioVenta * v.cantidad;
-        });
+        ventas
+          .filter((v) => v.isPagado === true)
+          .forEach((v) => {
+            if (!userSales[v.usuarioACargo]) {
+              userSales[v.usuarioACargo] = 0;
+            }
+            userSales[v.usuarioACargo] += v.precioUnitarioVenta * v.cantidad;
+          });
 
         return res.status(200).json(userSales);
       }
