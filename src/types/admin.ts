@@ -15,7 +15,7 @@ export interface Compra {
   id: string;
   producto: string;
   proveedor: string;
-  marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Otro';
+  marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'Otro';
   precioUnitarioCompra: number;
   cantidad: number;
   fecha: string;
@@ -25,7 +25,7 @@ export interface StockItem {
   id: string;
   producto: string;
   proveedor: string;
-  marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Otro';
+  marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'Otro';
   precioUnitarioVenta: number;
   cantidadVendida: number;
   cantidadComprada: number;

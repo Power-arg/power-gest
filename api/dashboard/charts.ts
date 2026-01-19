@@ -87,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (type === 'top-brands') {
-        // Top brands by sales quantity
+        // Top brands by sales revenue (dinero generado)
         const ventasCollection = await getVentasCollection();
         const comprasCollection = await getComprasCollection();
         
@@ -112,7 +112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           if (!brandSales[marca]) {
             brandSales[marca] = 0;
           }
-          brandSales[marca] += v.cantidad;
+          brandSales[marca] += v.precioUnitarioVenta * v.cantidad;
         });
 
         // Define brand colors
@@ -124,6 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'GoldNutrition': 'hsl(45, 93%, 47%)',
           'Growsbar': 'hsl(215, 14%, 46%)',
           'Crudda': 'hsl(30, 100%, 50%)',
+          'Granger': 'hsl(30, 50%, 30%)',
           'Otro': 'hsl(0, 0%, 83%)',
         };
 
@@ -132,7 +133,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .filter(([name]) => name !== 'Otro')
           .map(([name, value]) => ({
             name,
-            value,
+            value: Math.round(value),
             fill: brandColors[name] || 'hsl(0, 0%, 50%)',
           }));
 

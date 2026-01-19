@@ -41,11 +41,11 @@ export default function Ventas() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingVenta, setEditingVenta] = useState<Venta | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [productos, setProductos] = useState<{ producto: string; proveedor: string; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition'; stockDisponible: number; precioUnitarioVenta: number }[]>([]);
+  const [productos, setProductos] = useState<{ producto: string; proveedor: string; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'Otro'; stockDisponible: number; precioUnitarioVenta: number }[]>([]);
   const [stockDisponible, setStockDisponible] = useState<number>(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ventaToDelete, setVentaToDelete] = useState<Venta | null>(null);
-  const [marcaSeleccionada, setMarcaSeleccionada] = useState<'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition'>('ENA');
+  const [marcaSeleccionada, setMarcaSeleccionada] = useState<'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'Otro'>('ENA');
 
   const [formData, setFormData] = useState({
     producto: '',
@@ -225,6 +225,7 @@ export default function Ventas() {
     'GoldNutrition': 'bg-yellow-500 text-black',
     'Growsbar': 'bg-gray-600 text-white',
     'Crudda': 'bg-orange-500 text-white',
+    'Granger': 'bg-amber-900 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 
