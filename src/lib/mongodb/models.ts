@@ -24,7 +24,7 @@ export interface CompraDB {
   _id?: ObjectId;
   producto: string;
   proveedor: string;
-  marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger';
+  marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit';
   precioUnitarioCompra: number;
   cantidad: number;
   fecha: string;
