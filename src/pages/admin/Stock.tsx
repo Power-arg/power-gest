@@ -39,6 +39,7 @@ export default function Stock() {
     'Growsbar': 'bg-gray-600 text-white',
     'Crudda': 'bg-orange-500 text-white',
     'Granger': 'bg-amber-900 text-white',
+    'OneFit': 'bg-red-800 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 
