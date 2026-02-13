@@ -4,6 +4,13 @@ import { StatsCard } from '@/components/admin/StatsCard';
 import { StockItem } from '@/types/admin';
 import { getStock } from '@/lib/api';
 import { Package, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value);
@@ -11,6 +18,7 @@ const formatCurrency = (value: number) =>
 export default function Stock() {
   const [stock, setStock] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMarca, setSelectedMarca] = useState<string>('');
 
   useEffect(() => {
     const fetchStock = async () => {
@@ -130,7 +138,11 @@ export default function Stock() {
   ];
 
   // Summary stats
-  const filteredStock = stock.filter(s => s.producto !== 'Dinero de caja' && s.producto !== 'Envio');
+  const filteredStock = stock.filter(s => {
+    const notSpecialProducts = s.producto !== 'Dinero de caja' && s.producto !== 'Envio';
+    const matchesMarca = selectedMarca === '' || s.marca === selectedMarca;
+    return notSpecialProducts && matchesMarca;
+  });
   const totalProducts = filteredStock.length;
   const totalUnits = filteredStock.reduce((acc, s) => acc + Math.max(0, s.cantidadTotal), 0);
   const lowStockCount = filteredStock.filter((s) => s.cantidadTotal >= 1 && s.cantidadTotal <= 2).length;
@@ -151,6 +163,48 @@ export default function Stock() {
         <p className="text-muted-foreground text-sm">
           Inventario calculado automáticamente
         </p>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 animate-fade-up">
+        <div className="w-full sm:w-48">
+          <Select
+            value={selectedMarca || "all"}
+            onValueChange={(value) => setSelectedMarca(value === "all" ? "" : value)}
+          >
+            <SelectTrigger className="admin-input">
+              <SelectValue placeholder="Todas las marcas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                <span>Todas las marcas</span>
+              </SelectItem>
+              {Array.from(new Set(stock.map(s => s.marca))).sort().map((marca) => {
+                const marcaColors: Record<string, string> = {
+                  'ENA': 'bg-blue-500 text-white',
+                  'Star': 'bg-green-500 text-white',
+                  'Body Advance': 'bg-red-500 text-white',
+                  'Gentech': 'bg-blue-900 text-white',
+                  'GoldNutrition': 'bg-yellow-500 text-black',
+                  'Growsbar': 'bg-gray-600 text-white',
+                  'Crudda': 'bg-orange-500 text-white',
+                  'Granger': 'bg-amber-900 text-white',
+                  'OneFit': 'bg-red-800 text-white',
+                  'Otro': 'bg-gray-300 text-black',
+                };
+                const bgColor = marcaColors[marca] || marcaColors['Otro'];
+                return (
+                  <SelectItem key={marca} value={marca}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${bgColor.split(' ')[0]}`}></div>
+                      {marca}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Summary cards */}
@@ -187,17 +241,17 @@ export default function Stock() {
 
       {/* Desktop Table View */}
       <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        <DataTable data={stock.filter(s => s.producto !== 'Dinero de caja' && s.producto !== 'Envio')} columns={columns} searchKey="producto" />
+        <DataTable data={filteredStock} columns={columns} searchKey="producto" />
       </div>
 
       {/* Mobile Cards View */}
       <div className="md:hidden space-y-4 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        {stock.filter(s => s.producto !== 'Dinero de caja' && s.producto !== 'Envio').length === 0 ? (
+        {filteredStock.length === 0 ? (
           <div className="glass-card p-6 text-center text-muted-foreground">
             No hay productos en stock
           </div>
         ) : (
-          stock.filter(s => s.producto !== 'Dinero de caja' && s.producto !== 'Envio').map((item) => {
+          filteredStock.map((item) => {
             const isLow = item.cantidadTotal >= 1 && item.cantidadTotal <= 2;
             const isOut = item.cantidadTotal === 0;
             return (
