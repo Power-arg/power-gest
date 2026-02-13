@@ -25,19 +25,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { getComprasCollection } = await import('../src/lib/mongodb/models.js');
       const comprasCollection = await getComprasCollection();
 
-      // Get unique product-provider combinations with marca
+      // Get unique products with marca
       const productos = await Promise.all(
         stock.map(async (s) => {
-          // Get the most recent compra for this product-provider to get the marca
+          // Get the most recent compra for this product to get the marca
           const compra = await comprasCollection
-            .find({ producto: s.producto, proveedor: s.proveedor })
+            .find({ producto: s.producto })
             .sort({ createdAt: -1 })
             .limit(1)
             .toArray();
 
           return {
             producto: s.producto,
-            proveedor: s.proveedor,
             marca: compra[0]?.marca || 'ENA', // Default to ENA if no compra found
             stockDisponible: s.cantidadTotal,
             precioUnitarioVenta: s.precioUnitarioVenta,

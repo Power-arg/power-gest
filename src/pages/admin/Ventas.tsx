@@ -41,7 +41,7 @@ export default function Ventas() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingVenta, setEditingVenta] = useState<Venta | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [productos, setProductos] = useState<{ producto: string; proveedor: string; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Otro'; stockDisponible: number; precioUnitarioVenta: number }[]>([]);
+  const [productos, setProductos] = useState<{ producto: string; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Otro'; stockDisponible: number; precioUnitarioVenta: number }[]>([]);
   const [stockDisponible, setStockDisponible] = useState<number>(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ventaToDelete, setVentaToDelete] = useState<Venta | null>(null);
@@ -49,7 +49,6 @@ export default function Ventas() {
 
   const [formData, setFormData] = useState({
     producto: '',
-    proveedor: '',
     precioUnitarioVenta: '',
     cantidad: '',
     cliente: '',
@@ -89,7 +88,6 @@ export default function Ventas() {
   const resetForm = () => {
     setFormData({
       producto: '',
-      proveedor: '',
       precioUnitarioVenta: '',
       cantidad: '',
       cliente: '',
@@ -109,13 +107,12 @@ export default function Ventas() {
     setDialogOpen(true);
   };
 
-  const handleProductoProveedorChange = (productoProveedor: string) => {
-    const selected = productos.find(p => `${p.producto}|||${p.proveedor}` === productoProveedor);
+  const handleProductoChange = (producto: string) => {
+    const selected = productos.find(p => p.producto === producto);
     if (selected) {
       setFormData({
         ...formData,
         producto: selected.producto,
-        proveedor: selected.proveedor,
         precioUnitarioVenta: selected.precioUnitarioVenta.toString(),
       });
       setStockDisponible(selected.stockDisponible);
@@ -125,13 +122,12 @@ export default function Ventas() {
 
   const handleEdit = (venta: Venta) => {
     setEditingVenta(venta);
-    const producto = productos.find(p => p.producto === venta.producto && p.proveedor === venta.proveedor);
+    const producto = productos.find(p => p.producto === venta.producto);
     if (producto) {
       setMarcaSeleccionada(producto.marca);
     }
     setFormData({
       producto: venta.producto,
-      proveedor: venta.proveedor,
       precioUnitarioVenta: venta.precioUnitarioVenta.toString(),
       cantidad: venta.cantidad.toString(),
       cliente: venta.cliente,
@@ -169,7 +165,7 @@ export default function Ventas() {
 
     try {
       // Validaciones
-      if (!formData.producto || !formData.proveedor || !formData.precioUnitarioVenta || !formData.cantidad || !formData.cliente || !formData.usuarioACargo) {
+      if (!formData.producto || !formData.precioUnitarioVenta || !formData.cantidad || !formData.cliente || !formData.usuarioACargo) {
         toast({ title: 'Todos los campos son requeridos', variant: 'destructive' });
         setSubmitting(false);
         return;
@@ -188,7 +184,6 @@ export default function Ventas() {
 
       const ventaData = {
         producto: formData.producto,
-        proveedor: formData.proveedor,
         precioUnitarioVenta: parseFloat(formData.precioUnitarioVenta),
         cantidad: cantidad,
         cliente: formData.cliente,
@@ -235,7 +230,7 @@ export default function Ventas() {
       key: 'producto', 
       label: 'Producto',
       render: (v: Venta) => {
-        const producto = productos.find(p => p.producto === v.producto && p.proveedor === v.proveedor);
+        const producto = productos.find(p => p.producto === v.producto);
         return (
           <div className="flex items-center gap-2 flex-wrap">
             <span>{v.producto}</span>
@@ -248,7 +243,6 @@ export default function Ventas() {
         );
       },
     },
-    { key: 'proveedor', label: 'Proveedor' },
     {
       key: 'precioUnitarioVenta',
       label: 'Precio Unit.',
@@ -325,7 +319,7 @@ export default function Ventas() {
           </div>
         ) : (
           ventas.map((venta) => {
-            const producto = productos.find(p => p.producto === venta.producto && p.proveedor === venta.proveedor);
+            const producto = productos.find(p => p.producto === venta.producto);
             return (
               <div key={venta.id} className="glass-card p-4 space-y-3">
                 <div className="flex items-start justify-between gap-3">
@@ -338,7 +332,6 @@ export default function Ventas() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{venta.proveedor}</p>
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         venta.isPagado
@@ -412,18 +405,18 @@ export default function Ventas() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!editingVenta && (
             <div className="space-y-2">
-              <Label htmlFor="productoProveedor">Producto - Proveedor</Label>
+              <Label htmlFor="producto">Producto</Label>
               <Select
-                value={formData.producto && formData.proveedor ? `${formData.producto}|||${formData.proveedor}` : ''}
-                onValueChange={handleProductoProveedorChange}
+                value={formData.producto}
+                onValueChange={handleProductoChange}
               >
                 <SelectTrigger className="admin-input">
-                  <SelectValue placeholder="Selecciona producto y proveedor" />
+                  <SelectValue placeholder="Selecciona producto" />
                 </SelectTrigger>
                 <SelectContent>
                   {productos.map((p) => (
-                    <SelectItem key={`${p.producto}|||${p.proveedor}`} value={`${p.producto}|||${p.proveedor}`}>
-                      {p.producto} - {p.proveedor} (Stock: {p.stockDisponible})
+                    <SelectItem key={p.producto} value={p.producto}>
+                      {p.producto} (Stock: {p.stockDisponible})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -432,23 +425,13 @@ export default function Ventas() {
           )}
 
           {editingVenta && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Producto</Label>
-                <Input
-                  value={formData.producto}
-                  className="admin-input"
-                  disabled
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Proveedor</Label>
-                <Input
-                  value={formData.proveedor}
-                  className="admin-input"
-                  disabled
-                />
-              </div>
+            <div className="space-y-2">
+              <Label>Producto</Label>
+              <Input
+                value={formData.producto}
+                className="admin-input"
+                disabled
+              />
             </div>
           )}
 
@@ -570,7 +553,7 @@ export default function Ventas() {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción eliminará la venta de <strong>{ventaToDelete?.producto}</strong> del proveedor <strong>{ventaToDelete?.proveedor}</strong> al cliente <strong>{ventaToDelete?.cliente}</strong>. Esta acción no se puede deshacer.
+              Esta acción eliminará la venta de <strong>{ventaToDelete?.producto}</strong> al cliente <strong>{ventaToDelete?.cliente}</strong>. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

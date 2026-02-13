@@ -56,7 +56,6 @@ export default function Stock() {
         </div>
       ),
     },
-    { key: 'proveedor', label: 'Proveedor' },
     {
       key: 'precioUnitarioVenta',
       label: 'Precio Venta',
@@ -211,7 +210,6 @@ export default function Stock() {
                         {item.marca}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{item.proveedor}</p>
                     <div className="flex items-center gap-2">
                       {isOut ? (
                         <XCircle className="h-4 w-4 text-destructive" />

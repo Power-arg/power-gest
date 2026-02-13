@@ -27,9 +27,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const formatted = await Promise.all(
         stock.map(async (s) => {
-          // Get the most recent compra for this product-provider to get the marca
+          // Get the most recent compra for this product to get the marca
           const compra = await comprasCollection
-            .find({ producto: s.producto, proveedor: s.proveedor })
+            .find({ producto: s.producto })
             .sort({ createdAt: -1 })
             .limit(1)
             .toArray();
@@ -37,7 +37,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return {
             id: s._id!.toString(),
             producto: s.producto,
-            proveedor: s.proveedor,
             marca: compra[0]?.marca || 'ENA',
             precioUnitarioVenta: s.precioUnitarioVenta,
             cantidadVendida: s.cantidadVendida,

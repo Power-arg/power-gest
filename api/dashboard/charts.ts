@@ -96,11 +96,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const brandSales: { [key: string]: number } = {};
 
-        // For each venta, find the marca from the latest compra of that product-proveedor
+        // For each venta, find the marca from the latest compra of that product
         ventas.forEach((v) => {
-          // Find the most recent compra for this product-proveedor combination
+          // Find the most recent compra for this product
           const productCompras = compras
-            .filter(c => c.producto === v.producto && c.proveedor === v.proveedor)
+            .filter(c => c.producto === v.producto)
             .sort((a, b) => {
               const dateA = new Date(a.createdAt || a.fecha);
               const dateB = new Date(b.createdAt || b.fecha);

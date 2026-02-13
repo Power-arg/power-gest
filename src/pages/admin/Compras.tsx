@@ -35,7 +35,7 @@ export default function Compras() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCompra, setEditingCompra] = useState<Compra | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [productos, setProductos] = useState<{ producto: string; proveedor: string; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Otro' }[]>([]);
+  const [productos, setProductos] = useState<{ producto: string; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Otro'; stockDisponible: number; precioUnitarioVenta: number }[]>([]);
   const [isNewProduct, setIsNewProduct] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [compraToDelete, setCompraToDelete] = useState<Compra | null>(null);
@@ -100,13 +100,12 @@ export default function Compras() {
       setIsNewProduct(true);
       setFormData({ ...formData, producto: '', proveedor: '', marca: 'ENA' });
     } else {
-      const [producto, proveedor] = value.split('|||');
-      const selectedProduct = productos.find(p => p.producto === producto && p.proveedor === proveedor);
+      const selectedProduct = productos.find(p => p.producto === value);
       setIsNewProduct(false);
       setFormData({ 
         ...formData, 
-        producto, 
-        proveedor,
+        producto: value, 
+        proveedor: '',
         marca: selectedProduct?.marca || 'ENA'
       });
     }
@@ -328,13 +327,13 @@ export default function Compras() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!editingCompra && (
             <div className="space-y-2">
-              <Label htmlFor="productoProveedor">Producto - Proveedor</Label>
+              <Label htmlFor="producto">Producto</Label>
               <Select
                 value={
                   isNewProduct 
                     ? 'new' 
-                    : formData.producto && formData.proveedor 
-                    ? `${formData.producto}|||${formData.proveedor}` 
+                    : formData.producto 
+                    ? formData.producto
                     : ''
                 }
                 onValueChange={handleProductoProveedorChange}
@@ -345,8 +344,8 @@ export default function Compras() {
                 <SelectContent>
                   <SelectItem value="new">+ Nuevo Producto</SelectItem>
                   {productos.map((p) => (
-                    <SelectItem key={`${p.producto}|||${p.proveedor}`} value={`${p.producto}|||${p.proveedor}`}>
-                      {p.producto} - {p.proveedor}
+                    <SelectItem key={p.producto} value={p.producto}>
+                      {p.producto}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -354,107 +353,117 @@ export default function Compras() {
             </div>
           )}
 
-          {(isNewProduct || editingCompra) && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="producto">Producto</Label>
-                  <Input
-                    id="producto"
-                    value={formData.producto}
-                    onChange={(e) => setFormData({ ...formData, producto: e.target.value })}
-                    className="admin-input"
-                    disabled={editingCompra !== null}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="proveedor">Proveedor</Label>
-                  <Input
-                    id="proveedor"
-                    value={formData.proveedor}
-                    onChange={(e) => setFormData({ ...formData, proveedor: e.target.value })}
-                    className="admin-input"
-                    disabled={editingCompra !== null}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="marca">Marca</Label>
-                <Select
-                  value={formData.marca}
-                  onValueChange={(value) => setFormData({ ...formData, marca: value as typeof formData.marca })}
-                >
-                  <SelectTrigger className="admin-input">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ENA">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                        ENA
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Star">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        Star
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Body Advance">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        Body Advance
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Gentech">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-blue-900"></div>
-                        Gentech
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="GoldNutrition">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        GoldNutrition
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Growsbar">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-gray-600"></div>
-                        Growsbar
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Crudda">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                        Crudda
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Granger">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-amber-900"></div>
-                        Granger
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="OneFit">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-red-700"></div>
-                        OneFit
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Otro">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                        Otro
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
+          {isNewProduct && (
+            <div className="space-y-2">
+              <Label htmlFor="producto">Nombre del Producto</Label>
+              <Input
+                id="producto"
+                value={formData.producto}
+                onChange={(e) => setFormData({ ...formData, producto: e.target.value })}
+                className="admin-input"
+                placeholder="Ej: Whey Protein"
+                required
+              />
+            </div>
           )}
+
+          {editingCompra && (
+            <div className="space-y-2">
+              <Label>Producto</Label>
+              <Input
+                value={formData.producto}
+                className="admin-input"
+                disabled
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="proveedor">Proveedor</Label>
+            <Input
+              id="proveedor"
+              value={formData.proveedor}
+              onChange={(e) => setFormData({ ...formData, proveedor: e.target.value })}
+              className="admin-input"
+              placeholder="Ej: ProveedorX"
+              disabled={editingCompra !== null}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="marca">Marca</Label>
+            <Select
+              value={formData.marca}
+              onValueChange={(value) => setFormData({ ...formData, marca: value as typeof formData.marca })}
+            >
+              <SelectTrigger className="admin-input">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ENA">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    ENA
+                  </div>
+                </SelectItem>
+                <SelectItem value="Star">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    Star
+                  </div>
+                </SelectItem>
+                <SelectItem value="Body Advance">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    Body Advance
+                  </div>
+                </SelectItem>
+                <SelectItem value="Gentech">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-900"></div>
+                    Gentech
+                  </div>
+                </SelectItem>
+                <SelectItem value="GoldNutrition">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    GoldNutrition
+                  </div>
+                </SelectItem>
+                <SelectItem value="Growsbar">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-600"></div>
+                    Growsbar
+                  </div>
+                </SelectItem>
+                <SelectItem value="Crudda">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                    Crudda
+                  </div>
+                </SelectItem>
+                <SelectItem value="Granger">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-amber-900"></div>
+                    Granger
+                  </div>
+                </SelectItem>
+                <SelectItem value="OneFit">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-700"></div>
+                    OneFit
+                  </div>
+                </SelectItem>
+                <SelectItem value="Otro">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                    Otro
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
