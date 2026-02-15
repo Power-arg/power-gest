@@ -204,7 +204,7 @@ export default function Stock() {
           columns={columns} 
           searchKey="producto"
           filterElement={
-            <div className="w-full sm:w-48">
+            <div className="w-full sm:w-60">
               <Select
                 value={selectedMarca || "all"}
                 onValueChange={(value) => setSelectedMarca(value === "all" ? "" : value)}

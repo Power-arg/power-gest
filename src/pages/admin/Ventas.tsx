@@ -315,8 +315,8 @@ export default function Ventas() {
           onDelete={handleDeleteClick}
           searchKey="producto"
           filterElement={
-            <div className="flex gap-3 flex-1 sm:flex-none items-end">
-              <div className="flex-1 sm:flex-none">
+            <div className="flex gap-3 items-end">
+              <div className="w-60">
                 <Select
                   value={selectedCliente || "all"}
                   onValueChange={(value) => setSelectedCliente(value === "all" ? "" : value)}

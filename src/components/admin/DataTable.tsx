@@ -54,7 +54,7 @@ export function DataTable<T extends { id: string }>({
       {(searchKey || filterElement) && (
         <div className="flex flex-col sm:flex-row gap-3 items-end">
           {searchKey && (
-            <div className="relative flex-1">
+            <div className="relative flex-1 sm:w-48">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar..."
@@ -68,7 +68,7 @@ export function DataTable<T extends { id: string }>({
             </div>
           )}
           {filterElement && (
-            <div className="w-full sm:w-auto">
+            <div className="w-full sm:w-auto flex-1 sm:flex-0">
               {filterElement}
             </div>
           )}

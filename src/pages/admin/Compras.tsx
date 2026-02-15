@@ -256,7 +256,7 @@ export default function Compras() {
           onDelete={handleDeleteClick}
           searchKey="producto"
           filterElement={
-            <div className="w-full sm:w-48">
+            <div className="w-full sm:w-60">
               <Select
                 value={selectedProveedor || "all"}
                 onValueChange={(value) => setSelectedProveedor(value === "all" ? "" : value)}
@@ -266,7 +266,7 @@ export default function Compras() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    <span>Todos los proveedores</span>
+                    Todos los proveedores
                   </SelectItem>
                   {Array.from(new Set(compras.map(c => c.proveedor))).sort().map((proveedor) => (
                     <SelectItem key={proveedor} value={proveedor}>
