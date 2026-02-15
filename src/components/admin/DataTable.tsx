@@ -24,6 +24,7 @@ interface DataTableProps<T> {
   onDelete?: (item: T) => void;
   searchKey?: keyof T;
   pageSize?: number;
+  filterElement?: React.ReactNode;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -33,6 +34,7 @@ export function DataTable<T extends { id: string }>({
   onDelete,
   searchKey,
   pageSize = 10,
+  filterElement,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,18 +51,27 @@ export function DataTable<T extends { id: string }>({
 
   return (
     <div className="space-y-4">
-      {searchKey && (
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="pl-10 admin-input"
-          />
+      {(searchKey || filterElement) && (
+        <div className="flex flex-col sm:flex-row gap-3 items-end">
+          {searchKey && (
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="pl-10 admin-input"
+              />
+            </div>
+          )}
+          {filterElement && (
+            <div className="w-full sm:w-auto">
+              {filterElement}
+            </div>
+          )}
         </div>
       )}
 

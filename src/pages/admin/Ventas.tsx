@@ -46,6 +46,8 @@ export default function Ventas() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ventaToDelete, setVentaToDelete] = useState<Venta | null>(null);
   const [marcaSeleccionada, setMarcaSeleccionada] = useState<'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Otro'>('ENA');
+  const [selectedCliente, setSelectedCliente] = useState<string>('');
+  const [showOnlyNoPagados, setShowOnlyNoPagados] = useState<boolean>(false);
 
   const [formData, setFormData] = useState({
     producto: '',
@@ -303,11 +305,46 @@ export default function Ventas() {
       {/* Desktop Table View */}
       <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.1s' }}>
         <DataTable
-          data={ventas}
+          data={ventas.filter(v => {
+            const matchesCliente = selectedCliente === '' || v.cliente === selectedCliente;
+            const matchesPagado = !showOnlyNoPagados || !v.isPagado;
+            return matchesCliente && matchesPagado;
+          })}
           columns={columns}
           onEdit={handleEdit}
           onDelete={handleDeleteClick}
           searchKey="producto"
+          filterElement={
+            <div className="flex gap-3 flex-1 sm:flex-none items-end">
+              <div className="flex-1 sm:flex-none">
+                <Select
+                  value={selectedCliente || "all"}
+                  onValueChange={(value) => setSelectedCliente(value === "all" ? "" : value)}
+                >
+                  <SelectTrigger className="admin-input">
+                    <SelectValue placeholder="Todos los clientes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      <span>Todos los clientes</span>
+                    </SelectItem>
+                    {Array.from(new Set(ventas.map(v => v.cliente))).sort().map((cliente) => (
+                      <SelectItem key={cliente} value={cliente}>
+                        {cliente}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={showOnlyNoPagados}
+                  onCheckedChange={setShowOnlyNoPagados}
+                />
+                <span className="text-sm text-muted-foreground whitespace-nowrap">No pagados</span>
+              </div>
+            </div>
+          }
         />
       </div>
 

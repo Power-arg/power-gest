@@ -39,6 +39,7 @@ export default function Compras() {
   const [isNewProduct, setIsNewProduct] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [compraToDelete, setCompraToDelete] = useState<Compra | null>(null);
+  const [selectedProveedor, setSelectedProveedor] = useState<string>('');
 
   const [formData, setFormData] = useState({
     producto: '',
@@ -249,11 +250,33 @@ export default function Compras() {
       {/* Desktop Table View */}
       <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.1s' }}>
         <DataTable
-          data={compras}
+          data={compras.filter(c => selectedProveedor === '' || c.proveedor === selectedProveedor)}
           columns={columns}
           onEdit={handleEdit}
           onDelete={handleDeleteClick}
           searchKey="producto"
+          filterElement={
+            <div className="w-full sm:w-48">
+              <Select
+                value={selectedProveedor || "all"}
+                onValueChange={(value) => setSelectedProveedor(value === "all" ? "" : value)}
+              >
+                <SelectTrigger className="admin-input">
+                  <SelectValue placeholder="Todos los proveedores" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    <span>Todos los proveedores</span>
+                  </SelectItem>
+                  {Array.from(new Set(compras.map(c => c.proveedor))).sort().map((proveedor) => (
+                    <SelectItem key={proveedor} value={proveedor}>
+                      {proveedor}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          }
         />
       </div>
 

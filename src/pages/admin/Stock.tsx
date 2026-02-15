@@ -165,48 +165,6 @@ export default function Stock() {
         </p>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 animate-fade-up">
-        <div className="w-full sm:w-48">
-          <Select
-            value={selectedMarca || "all"}
-            onValueChange={(value) => setSelectedMarca(value === "all" ? "" : value)}
-          >
-            <SelectTrigger className="admin-input">
-              <SelectValue placeholder="Todas las marcas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <span>Todas las marcas</span>
-              </SelectItem>
-              {Array.from(new Set(stock.map(s => s.marca))).sort().map((marca) => {
-                const marcaColors: Record<string, string> = {
-                  'ENA': 'bg-blue-500 text-white',
-                  'Star': 'bg-green-500 text-white',
-                  'Body Advance': 'bg-red-500 text-white',
-                  'Gentech': 'bg-blue-900 text-white',
-                  'GoldNutrition': 'bg-yellow-500 text-black',
-                  'Growsbar': 'bg-gray-600 text-white',
-                  'Crudda': 'bg-orange-500 text-white',
-                  'Granger': 'bg-amber-900 text-white',
-                  'OneFit': 'bg-red-800 text-white',
-                  'Otro': 'bg-gray-300 text-black',
-                };
-                const bgColor = marcaColors[marca] || marcaColors['Otro'];
-                return (
-                  <SelectItem key={marca} value={marca}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${bgColor.split(' ')[0]}`}></div>
-                      {marca}
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
@@ -241,7 +199,51 @@ export default function Stock() {
 
       {/* Desktop Table View */}
       <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        <DataTable data={filteredStock} columns={columns} searchKey="producto" />
+        <DataTable 
+          data={filteredStock} 
+          columns={columns} 
+          searchKey="producto"
+          filterElement={
+            <div className="w-full sm:w-48">
+              <Select
+                value={selectedMarca || "all"}
+                onValueChange={(value) => setSelectedMarca(value === "all" ? "" : value)}
+              >
+                <SelectTrigger className="admin-input">
+                  <SelectValue placeholder="Todas las marcas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    <span>Todas las marcas</span>
+                  </SelectItem>
+                  {Array.from(new Set(stock.map(s => s.marca))).sort().map((marca) => {
+                    const marcaColorMap: Record<string, string> = {
+                      'ENA': 'bg-blue-500',
+                      'Star': 'bg-green-500',
+                      'Body Advance': 'bg-red-500',
+                      'Gentech': 'bg-blue-900',
+                      'GoldNutrition': 'bg-yellow-500',
+                      'Growsbar': 'bg-gray-600',
+                      'Crudda': 'bg-orange-500',
+                      'Granger': 'bg-amber-900',
+                      'OneFit': 'bg-red-800',
+                      'Otro': 'bg-gray-300',
+                    };
+                    const bgColor = marcaColorMap[marca] || marcaColorMap['Otro'];
+                    return (
+                      <SelectItem key={marca} value={marca}>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${bgColor}`}></div>
+                          {marca}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          }
+        />
       </div>
 
       {/* Mobile Cards View */}
