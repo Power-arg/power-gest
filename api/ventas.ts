@@ -33,7 +33,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const formatted = ventas.map((v) => ({
         id: v._id!.toString(),
         producto: v.producto,
-        proveedor: v.proveedor,
         precioUnitarioVenta: v.precioUnitarioVenta,
         cantidad: v.cantidad,
         cliente: v.cliente,
@@ -49,7 +48,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'POST') {
       const {
         producto,
-        proveedor,
         precioUnitarioVenta,
         cantidad,
         cliente,
@@ -61,7 +59,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (
         !producto ||
-        !proveedor ||
         precioUnitarioVenta === undefined ||
         !cantidad ||
         !cliente ||
@@ -75,11 +72,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Check if stock exists and has enough quantity
       const stockCollection = await getStockCollection();
-      const stock = await stockCollection.findOne({ producto, proveedor });
+      const stock = await stockCollection.findOne({ producto });
 
       if (!stock) {
         return res.status(400).json({ 
-          error: 'No existe stock para este producto-proveedor' 
+          error: 'No existe stock para este producto' 
         });
       }
 
@@ -91,7 +88,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const newVenta: VentaDB = {
         producto,
-        proveedor,
         precioUnitarioVenta: parseFloat(precioUnitarioVenta),
         cantidad: parseInt(cantidad),
         cliente,
@@ -107,7 +103,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Update stock
       await updateStockAfterVenta(
         producto,
-        proveedor,
         parseInt(cantidad),
         parseFloat(precioUnitarioVenta)
       );
@@ -146,7 +141,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const stockCollection = await getStockCollection();
         const stock = await stockCollection.findOne({
           producto: existingVenta.producto,
-          proveedor: existingVenta.proveedor,
         });
 
         if (stock) {
@@ -185,7 +179,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ) {
         await adjustStockAfterUpdateVenta(
           existingVenta.producto,
-          existingVenta.proveedor,
           existingVenta.cantidad,
           updatedVenta.cantidad,
           updatedVenta.precioUnitarioVenta
@@ -195,7 +188,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({
         id,
         producto: existingVenta.producto,
-        proveedor: existingVenta.proveedor,
         ...updatedVenta,
       });
     }
@@ -217,7 +209,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       await ventasCollection.deleteOne({ _id: new ObjectId(id) });
 
       // Revert stock
-      await revertStockAfterDeleteVenta(venta.producto, venta.proveedor, venta.cantidad);
+      await revertStockAfterDeleteVenta(venta.producto, venta.cantidad);
 
       return res.status(200).json({ message: 'Venta deleted' });
     }

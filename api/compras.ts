@@ -56,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const result = await comprasCollection.insertOne(newCompra);
       
       // Update stock
-      await updateStockAfterCompra(producto, proveedor, parseInt(cantidad));
+      await updateStockAfterCompra(producto, parseInt(cantidad));
 
       return res.status(201).json({
         id: result.insertedId.toString(),
@@ -72,13 +72,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'ID is required' });
       }
 
-      // Check if this product-provider has sales
+      // Check if this product has sales
       const ventasCollection = await getVentasCollection();
-      const hasSales = await ventasCollection.findOne({ producto, proveedor });
+      const hasSales = await ventasCollection.findOne({ producto });
 
       if (hasSales) {
         return res.status(400).json({ 
-          error: 'No se puede editar una compra de un producto-proveedor con ventas registradas' 
+          error: 'No se puede editar una compra de un producto con ventas registradas' 
         });
       }
 
@@ -108,7 +108,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (updatedCompra.cantidad !== existingCompra.cantidad) {
         await adjustStockAfterUpdateCompra(
           updatedCompra.producto,
-          updatedCompra.proveedor,
           existingCompra.cantidad,
           updatedCompra.cantidad
         );
@@ -137,8 +136,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Check if removing this compra would leave enough stock to cover existing sales
       const stockCollection = await getStockCollection();
       const stock = await stockCollection.findOne({ 
-        producto: compra.producto, 
-        proveedor: compra.proveedor 
+        producto: compra.producto
       });
 
       if (stock) {
@@ -156,7 +154,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       await comprasCollection.deleteOne({ _id: new ObjectId(id) });
       
       // Revert stock
-      await revertStockAfterDeleteCompra(compra.producto, compra.proveedor, compra.cantidad);
+      await revertStockAfterDeleteCompra(compra.producto, compra.cantidad);
 
       return res.status(200).json({ message: 'Compra deleted' });
     }

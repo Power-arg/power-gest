@@ -1,7 +1,6 @@
 export interface Venta {
   id: string;
   producto: string;
-  proveedor: string;
   precioUnitarioVenta: number;
   cantidad: number;
   cliente: string;
@@ -24,7 +23,6 @@ export interface Compra {
 export interface StockItem {
   id: string;
   producto: string;
-  proveedor: string;
   marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Otro';
   precioUnitarioVenta: number;
   cantidadVendida: number;
