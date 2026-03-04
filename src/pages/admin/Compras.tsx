@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { DataTable } from '@/components/admin/DataTable';
 import { FormDialog } from '@/components/admin/FormDialog';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Loader2, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Loader2, Pencil, Trash2, Check, ChevronsUpDown } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Compra } from '@/types/admin';
 import { getCompras, createCompra, updateCompra, deleteCompra, getProductos } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
@@ -40,6 +53,10 @@ export default function Compras() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [compraToDelete, setCompraToDelete] = useState<Compra | null>(null);
   const [selectedProveedor, setSelectedProveedor] = useState<string>('');
+  const [openProducto, setOpenProducto] = useState(false);
+  const [productoWidth, setProductoWidth] = useState<number>(0);
+  const productoTriggerRef = useRef<HTMLButtonElement>(null);
+  const productoListRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     producto: '',
@@ -77,6 +94,18 @@ export default function Compras() {
     fetchProductos();
   }, []);
 
+  useEffect(() => {
+    if (productoTriggerRef.current && openProducto) {
+      setProductoWidth(productoTriggerRef.current.offsetWidth);
+    }
+  }, [openProducto]);
+
+  useEffect(() => {
+    if (productoListRef.current) {
+      productoListRef.current.scrollTop = 0;
+    }
+  }, [openProducto, productos]);
+
   const resetForm = () => {
     setFormData({
       producto: '',
@@ -110,6 +139,7 @@ export default function Compras() {
         marca: selectedProduct?.marca || 'ENA'
       });
     }
+    setOpenProducto(false);
   };
 
   const handleEdit = (compra: Compra) => {
@@ -351,28 +381,65 @@ export default function Compras() {
           {!editingCompra && (
             <div className="space-y-2">
               <Label htmlFor="producto">Producto</Label>
-              <Select
-                value={
-                  isNewProduct 
-                    ? 'new' 
-                    : formData.producto 
-                    ? formData.producto
-                    : ''
-                }
-                onValueChange={handleProductoProveedorChange}
-              >
-                <SelectTrigger className="admin-input">
-                  <SelectValue placeholder="Selecciona o crea nuevo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">+ Nuevo Producto</SelectItem>
-                  {productos.map((p) => (
-                    <SelectItem key={p.producto} value={p.producto}>
-                      {p.producto}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openProducto} onOpenChange={setOpenProducto}>
+                <PopoverTrigger asChild>
+                  <Button
+                    ref={productoTriggerRef}
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openProducto}
+                    className="w-full justify-between admin-input h-10 px-3 py-2"
+                  >
+                    {isNewProduct
+                      ? "+ Nuevo Producto"
+                      : formData.producto
+                      ? formData.producto
+                      : "Selecciona o crea nuevo..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent style={{ width: productoWidth ? `${productoWidth}px` : 'auto' }} className="p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar producto..." />
+                    <CommandList ref={productoListRef} className="overflow-y-auto">
+                      <CommandEmpty>No hay productos encontrados.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="new"
+                          onSelect={() => handleProductoProveedorChange("new")}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              isNewProduct ? "opacity-100" : "opacity-0"
+                            }`}
+                          />
+                          + Nuevo Producto
+                        </CommandItem>
+                        {productos
+                          .sort((a, b) => a.producto.localeCompare(b.producto))
+                          .map((p) => (
+                            <CommandItem
+                              key={p.producto}
+                              value={p.producto}
+                              onSelect={() =>
+                                handleProductoProveedorChange(p.producto)
+                              }
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  !isNewProduct && formData.producto === p.producto
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                }`}
+                              />
+                              {p.producto}
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
 

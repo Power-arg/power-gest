@@ -8,7 +8,7 @@ async function initPassword() {
     const db = client.db('powergest');
     const config = db.collection('config');
     
-    const plainPassword = 'Power(FS)05';
+    const plainPassword = 'TuPassword123';
     console.log(`Hasheando contraseña: ${plainPassword}`);
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
     

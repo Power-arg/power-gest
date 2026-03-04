@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { DataTable } from '@/components/admin/DataTable';
 import { FormDialog } from '@/components/admin/FormDialog';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Loader2, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Loader2, Pencil, Trash2, Check, ChevronsUpDown } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Venta } from '@/types/admin';
 import { getVentas, createVenta, updateVenta, deleteVenta, getProductos } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
@@ -48,6 +61,10 @@ export default function Ventas() {
   const [marcaSeleccionada, setMarcaSeleccionada] = useState<'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Otro'>('ENA');
   const [selectedCliente, setSelectedCliente] = useState<string>('');
   const [showOnlyNoPagados, setShowOnlyNoPagados] = useState<boolean>(false);
+  const [openProducto, setOpenProducto] = useState(false);
+  const [productoWidth, setProductoWidth] = useState<number>(0);
+  const productoTriggerRef = useRef<HTMLButtonElement>(null);
+  const productoListRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     producto: '',
@@ -87,6 +104,18 @@ export default function Ventas() {
     fetchProductos();
   }, []);
 
+  useEffect(() => {
+    if (productoTriggerRef.current && openProducto) {
+      setProductoWidth(productoTriggerRef.current.offsetWidth);
+    }
+  }, [openProducto]);
+
+  useEffect(() => {
+    if (productoListRef.current) {
+      productoListRef.current.scrollTop = 0;
+    }
+  }, [openProducto, productos]);
+
   const resetForm = () => {
     setFormData({
       producto: '',
@@ -120,6 +149,7 @@ export default function Ventas() {
       setStockDisponible(selected.stockDisponible);
       setMarcaSeleccionada(selected.marca);
     }
+    setOpenProducto(false);
   };
 
   const handleEdit = (venta: Venta) => {
@@ -443,21 +473,55 @@ export default function Ventas() {
           {!editingVenta && (
             <div className="space-y-2">
               <Label htmlFor="producto">Producto</Label>
-              <Select
-                value={formData.producto}
-                onValueChange={handleProductoChange}
-              >
-                <SelectTrigger className="admin-input">
-                  <SelectValue placeholder="Selecciona producto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {productos.map((p) => (
-                    <SelectItem key={p.producto} value={p.producto}>
-                      {p.producto} (Stock: {p.stockDisponible})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openProducto} onOpenChange={setOpenProducto}>
+                <PopoverTrigger asChild>
+                  <Button
+                    ref={productoTriggerRef}
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openProducto}
+                    className="w-full justify-between admin-input h-10 px-3 py-2"
+                  >
+                    {formData.producto
+                      ? formData.producto
+                      : "Selecciona producto..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent style={{ width: productoWidth ? `${productoWidth}px` : 'auto' }} className="p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar producto..." />
+                    <CommandList ref={productoListRef} className="overflow-y-auto">
+                      <CommandEmpty>No hay productos encontrados.</CommandEmpty>
+                      <CommandGroup>
+                        {productos
+                          .sort((a, b) => a.producto.localeCompare(b.producto))
+                          .map((p) => (
+                            <CommandItem
+                              key={p.producto}
+                              value={p.producto}
+                              onSelect={() => handleProductoChange(p.producto)}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  formData.producto === p.producto
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                }`}
+                              />
+                              <div className="flex-1">
+                                <div>{p.producto}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  Stock: {p.stockDisponible}
+                                </div>
+                              </div>
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
 
@@ -518,13 +582,19 @@ export default function Ventas() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="usuarioACargo">Usuario a Cargo</Label>
-              <Input
-                id="usuarioACargo"
+              <Select
                 value={formData.usuarioACargo}
-                onChange={(e) => setFormData({ ...formData, usuarioACargo: e.target.value })}
-                className="admin-input"
-                required
-              />
+                onValueChange={(value) => setFormData({ ...formData, usuarioACargo: value })}
+              >
+                <SelectTrigger className="admin-input">
+                  <SelectValue placeholder="Selecciona usuario" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Fer">Fer</SelectItem>
+                  <SelectItem value="So">So</SelectItem>
+                  <SelectItem value="Power">Power</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
