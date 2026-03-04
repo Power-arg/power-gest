@@ -191,6 +191,18 @@ export default function Ventas() {
     }
   };
 
+  // Obtener clientes únicos y sin duplicados (limpios)
+  const clientesUnicos = Array.from(
+    new Set(ventas.map(v => v.cliente.trim()))
+  ).sort();
+
+  // Filtrar ventas según los filtros seleccionados
+  const ventasFiltradas = ventas.filter(v => {
+    const matchesCliente = selectedCliente === '' || v.cliente.trim() === selectedCliente;
+    const matchesPagado = !showOnlyNoPagados || !v.isPagado;
+    return matchesCliente && matchesPagado;
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -335,11 +347,7 @@ export default function Ventas() {
       {/* Desktop Table View */}
       <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.1s' }}>
         <DataTable
-          data={ventas.filter(v => {
-            const matchesCliente = selectedCliente === '' || v.cliente === selectedCliente;
-            const matchesPagado = !showOnlyNoPagados || !v.isPagado;
-            return matchesCliente && matchesPagado;
-          })}
+          data={ventasFiltradas}
           columns={columns}
           onEdit={handleEdit}
           onDelete={handleDeleteClick}
@@ -358,7 +366,7 @@ export default function Ventas() {
                     <SelectItem value="all">
                       <span>Todos los clientes</span>
                     </SelectItem>
-                    {Array.from(new Set(ventas.map(v => v.cliente))).sort().map((cliente) => (
+                    {clientesUnicos.map((cliente) => (
                       <SelectItem key={cliente} value={cliente}>
                         {cliente}
                       </SelectItem>
@@ -380,12 +388,12 @@ export default function Ventas() {
 
       {/* Mobile Cards View */}
       <div className="md:hidden space-y-4 animate-fade-up" style={{ animationDelay: '0.1s' }}>
-        {ventas.length === 0 ? (
+        {ventasFiltradas.length === 0 ? (
           <div className="glass-card p-6 text-center text-muted-foreground">
             No hay ventas registradas
           </div>
         ) : (
-          ventas.map((venta) => {
+          ventasFiltradas.map((venta) => {
             const producto = productos.find(p => p.producto === venta.producto);
             return (
               <div key={venta.id} className="glass-card p-4 space-y-3">

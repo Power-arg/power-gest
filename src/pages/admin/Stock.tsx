@@ -227,7 +227,6 @@ export default function Stock() {
                       'Crudda': 'bg-orange-500',
                       'Granger': 'bg-amber-900',
                       'OneFit': 'bg-red-800',
-                      'Otro': 'bg-gray-300',
                     };
                     const bgColor = marcaColorMap[marca] || marcaColorMap['Otro'];
                     return (
