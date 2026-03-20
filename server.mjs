@@ -694,11 +694,16 @@ app.get('/api/dashboard/charts', async (req, res) => {
       const monthlyData = {};
 
       ventas.forEach((v) => {
+        const totalVenta = v.precioUnitarioVenta * v.cantidad;
+        if (totalVenta < 0) {
+          return;
+        }
+
         const month = v.fecha.substring(0, 7);
         if (!monthlyData[month]) {
           monthlyData[month] = { ventas: 0, compras: 0 };
         }
-        monthlyData[month].ventas += v.precioUnitarioVenta * v.cantidad;
+        monthlyData[month].ventas += totalVenta;
       });
 
       compras.forEach((c) => {
@@ -799,27 +804,35 @@ app.get('/api/dashboard/charts', async (req, res) => {
       const ventasCollection = await getVentasCollection();
       const ventas = await ventasCollection.find({}).toArray();
 
-      const paymentMethods = {};
+      const paymentMethods = {
+        efectivo: 0,
+        transferencia: 0,
+      };
 
       ventas.forEach((v) => {
-        if (!paymentMethods[v.metodoPago]) {
-          paymentMethods[v.metodoPago] = 0;
+        const totalVenta = v.precioUnitarioVenta * v.cantidad;
+        if (totalVenta < 0) {
+          return;
         }
-        paymentMethods[v.metodoPago] += v.precioUnitarioVenta * v.cantidad;
-      });
 
-      const labels = {
-        efectivo: 'Efectivo',
-        transferencia: 'Transferencia',
-      };
+        const method = v.metodoPago === 'transferencia' ? 'transferencia' : 'efectivo';
+        paymentMethods[method] += totalVenta;
+      });
 
       const colors = ['hsl(0, 0%, 90%)', 'hsl(0, 0%, 70%)', 'hsl(0, 0%, 50%)', 'hsl(0, 0%, 30%)'];
 
-      const chartData = Object.entries(paymentMethods).map(([method, value], index) => ({
-        name: labels[method] || method,
-        value: Math.round(value),
-        fill: colors[index % colors.length],
-      }));
+      const chartData = [
+        {
+          name: 'Efectivo',
+          value: Math.round(paymentMethods.efectivo),
+          fill: colors[0],
+        },
+        {
+          name: 'Transferencia',
+          value: Math.round(paymentMethods.transferencia),
+          fill: colors[1],
+        },
+      ];
 
       return res.status(200).json(chartData);
     }
