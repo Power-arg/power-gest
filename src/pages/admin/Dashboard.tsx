@@ -42,6 +42,14 @@ export default function Dashboard() {
   const [clients, setClients] = useState<ChartData[]>([]);
   const [userSales, setUserSales] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(true);
+  const salesDataWithoutNegativeSales = salesData.map((item) => ({
+    ...item,
+    ventas: Math.max(0, Number(item.ventas ?? 0)),
+  }));
+  const paymentMethodsWithoutNegativeValues: ChartData[] = paymentMethods.map((item) => ({
+    ...item,
+    value: Math.max(0, Number(item.value ?? 0)),
+  }));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,7 +129,7 @@ export default function Dashboard() {
           <h3 className="font-display text-base md:text-lg font-semibold mb-4">Ventas vs Compras</h3>
           <div className="h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={salesData}>
+              <LineChart data={salesDataWithoutNegativeSales}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 20%)" />
                 <XAxis dataKey="name" stroke="hsl(0 0% 50%)" fontSize={11} />
                 <YAxis stroke="hsl(0 0% 50%)" fontSize={11} tickFormatter={(v) => `$${v/1000}k`} />
@@ -235,7 +243,7 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={paymentMethods}
+                  data={paymentMethodsWithoutNegativeValues}
                   cx="50%"
                   cy="50%"
                   innerRadius={50}
@@ -246,7 +254,7 @@ export default function Dashboard() {
                   labelLine={false}
                   style={{ fontSize: '12px' }}
                 >
-                  {paymentMethods.map((entry, index) => (
+                  {paymentMethodsWithoutNegativeValues.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill as string} />
                   ))}
                 </Pie>
@@ -268,7 +276,7 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={paymentMethods}
+                  data={paymentMethodsWithoutNegativeValues}
                   cx="50%"
                   cy="40%"
                   innerRadius={35}
@@ -277,7 +285,7 @@ export default function Dashboard() {
                   dataKey="value"
                   label={false}
                 >
-                  {paymentMethods.map((entry, index) => (
+                  {paymentMethodsWithoutNegativeValues.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill as string} />
                   ))}
                 </Pie>
@@ -295,7 +303,7 @@ export default function Dashboard() {
                   wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }}
                   iconType="circle"
                   formatter={(value, entry: any) => {
-                    const total = paymentMethods.reduce((sum, item) => sum + item.value, 0);
+                    const total = paymentMethodsWithoutNegativeValues.reduce((sum, item) => sum + Number(item.value ?? 0), 0);
                     const percent = ((entry.payload.value / total) * 100).toFixed(0);
                     return <span style={{ color: 'hsl(0, 0%, 80%)' }}>{value} ({percent}%)</span>;
                   }}
