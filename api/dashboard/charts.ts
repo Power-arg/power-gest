@@ -131,6 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Crudda': 'hsl(30, 100%, 50%)',
           'Granger': 'hsl(30, 50%, 30%)',
           'OneFit': 'hsl(0, 58.4%, 32%)',
+          'Nutremax': 'hsl(330, 81%, 60%)',
           'Otro': 'hsl(0, 0%, 83%)',
         };
 

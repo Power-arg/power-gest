@@ -268,7 +268,7 @@ export async function getUserSalesData(): Promise<{ [key: string]: number }> {
 // ============================================
 // PRODUCTOS (for dropdowns)
 // ============================================
-export async function getProductos(): Promise<{ producto: string; stockDisponible: number; precioUnitarioVenta: number; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Otro' }[]> {
+export async function getProductos(): Promise<{ producto: string; stockDisponible: number; precioUnitarioVenta: number; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Nutremax' | 'Otro' }[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/productos`);
     if (!response.ok) throw new Error('Failed to fetch productos');

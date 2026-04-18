@@ -48,6 +48,7 @@ export default function Stock() {
     'Crudda': 'bg-orange-500 text-white',
     'Granger': 'bg-amber-900 text-white',
     'OneFit': 'bg-red-800 text-white',
+    'Nutremax': 'bg-pink-500 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 
@@ -216,7 +217,7 @@ export default function Stock() {
                   <SelectItem value="all">
                     <span>Todas las marcas</span>
                   </SelectItem>
-                  {Array.from(new Set(stock.map(s => s.marca))).sort().map((marca) => {
+                  {Array.from(new Set(stock.map(s => s.marca))).filter((marca) => marca !== 'Otro').sort().map((marca) => {
                     const marcaColorMap: Record<string, string> = {
                       'ENA': 'bg-blue-500',
                       'Star': 'bg-green-500',
@@ -227,6 +228,8 @@ export default function Stock() {
                       'Crudda': 'bg-orange-500',
                       'Granger': 'bg-amber-900',
                       'OneFit': 'bg-red-800',
+                      'Nutremax': 'bg-pink-500',
+                      'Otro': 'bg-gray-400',
                     };
                     const bgColor = marcaColorMap[marca] || marcaColorMap['Otro'];
                     return (
