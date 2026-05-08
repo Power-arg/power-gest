@@ -132,6 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Granger': 'hsl(30, 50%, 30%)',
           'OneFit': 'hsl(0, 58.4%, 32%)',
           'Nutremax': 'hsl(330, 81%, 60%)',
+          'Integra': 'hsl(45, 93%, 47%)',
           'Otro': 'hsl(0, 0%, 83%)',
         };
 

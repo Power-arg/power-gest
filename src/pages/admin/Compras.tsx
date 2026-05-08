@@ -48,7 +48,7 @@ export default function Compras() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCompra, setEditingCompra] = useState<Compra | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [productos, setProductos] = useState<{ producto: string; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Nutremax' | 'Otro'; stockDisponible: number; precioUnitarioVenta: number }[]>([]);
+  const [productos, setProductos] = useState<{ producto: string; marca: 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Nutremax' | 'Integra' | 'Otro'; stockDisponible: number; precioUnitarioVenta: number }[]>([]);
   const [isNewProduct, setIsNewProduct] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [compraToDelete, setCompraToDelete] = useState<Compra | null>(null);
@@ -61,7 +61,7 @@ export default function Compras() {
   const [formData, setFormData] = useState({
     producto: '',
     proveedor: '',
-    marca: 'ENA' as 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Nutremax' | 'Otro',
+    marca: 'ENA' as 'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Nutremax' | 'Integra' | 'Otro',
     precioUnitarioCompra: '',
     cantidad: '',
     fecha: new Date().toISOString().split('T')[0],
@@ -226,6 +226,7 @@ export default function Compras() {
     'Granger': 'bg-amber-900 text-white',
     'OneFit': 'bg-red-800 text-white',
     'Nutremax': 'bg-pink-500 text-white',
+    'Integra': 'bg-yellow-500 text-black',
     'Otro': 'bg-gray-300 text-black',
   };
 
@@ -516,12 +517,6 @@ export default function Compras() {
                     Gentech
                   </div>
                 </SelectItem>
-                <SelectItem value="GoldNutrition">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    GoldNutrition
-                  </div>
-                </SelectItem>
                 <SelectItem value="Growsbar">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-gray-600"></div>
@@ -550,6 +545,12 @@ export default function Compras() {
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-pink-500"></div>
                     Nutremax
+                  </div>
+                </SelectItem>
+                <SelectItem value="Integra">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    Integra
                   </div>
                 </SelectItem>
                 <SelectItem value="Otro">
