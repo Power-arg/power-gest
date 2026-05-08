@@ -43,13 +43,12 @@ export default function Stock() {
     'Star': 'bg-green-500 text-white',
     'Body Advance': 'bg-red-500 text-white',
     'Gentech': 'bg-blue-900 text-white',
-    'GoldNutrition': 'bg-yellow-500 text-black',
     'Growsbar': 'bg-gray-600 text-white',
     'Crudda': 'bg-orange-500 text-white',
     'Granger': 'bg-amber-900 text-white',
     'OneFit': 'bg-red-800 text-white',
     'Nutremax': 'bg-pink-500 text-white',
-    'Integra': 'bg-yellow-500 text-black',
+    'Integra': 'bg-yellow-500 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 
