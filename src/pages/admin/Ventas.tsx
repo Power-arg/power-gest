@@ -266,7 +266,7 @@ export default function Ventas() {
     'Granger': 'bg-amber-900 text-white',
     'OneFit': 'bg-red-700 text-white',
     'Nutremax': 'bg-pink-500 text-white',
-    'Integra': 'bg-yellow-500 text-white',
+    'Integra': 'bg-yellow-600 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 

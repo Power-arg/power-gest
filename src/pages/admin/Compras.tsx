@@ -225,7 +225,7 @@ export default function Compras() {
     'Granger': 'bg-amber-900 text-white',
     'OneFit': 'bg-red-800 text-white',
     'Nutremax': 'bg-pink-500 text-white',
-    'Integra': 'bg-yellow-500 text-white',
+    'Integra': 'bg-yellow-600 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 
@@ -548,7 +548,7 @@ export default function Compras() {
                 </SelectItem>
                 <SelectItem value="Integra">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-600"></div>
                     Integra
                   </div>
                 </SelectItem>

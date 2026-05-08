@@ -48,7 +48,7 @@ export default function Stock() {
     'Granger': 'bg-amber-900 text-white',
     'OneFit': 'bg-red-800 text-white',
     'Nutremax': 'bg-pink-500 text-white',
-    'Integra': 'bg-yellow-500 text-white',
+    'Integra': 'bg-yellow-600 text-white',
     'Otro': 'bg-gray-300 text-black',
   };
 
@@ -229,7 +229,7 @@ export default function Stock() {
                       'Granger': 'bg-amber-900',
                       'OneFit': 'bg-red-800',
                       'Nutremax': 'bg-pink-500',
-                      'Integra': 'bg-yellow-500',
+                      'Integra': 'bg-yellow-600',
                       'Otro': 'bg-gray-400',
                     };
                     const bgColor = marcaColorMap[marca] || marcaColorMap['Otro'];
