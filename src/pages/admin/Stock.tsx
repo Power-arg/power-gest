@@ -3,7 +3,8 @@ import { DataTable } from '@/components/admin/DataTable';
 import { StatsCard } from '@/components/admin/StatsCard';
 import { StockItem } from '@/types/admin';
 import { getStock } from '@/lib/api';
-import { Package, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Package, AlertTriangle, CheckCircle, XCircle, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -19,6 +20,7 @@ export default function Stock() {
   const [stock, setStock] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMarca, setSelectedMarca] = useState<string>('');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const fetchStock = async () => {
@@ -142,7 +144,8 @@ export default function Stock() {
   const filteredStock = stock.filter(s => {
     const notSpecialProducts = s.producto !== 'Dinero de caja' && s.producto !== 'Envio';
     const matchesMarca = selectedMarca === '' || s.marca === selectedMarca;
-    return notSpecialProducts && matchesMarca;
+    const matchesSearch = s.producto.toLowerCase().includes(search.toLowerCase());
+    return notSpecialProducts && matchesMarca && matchesSearch;
   });
   const totalProducts = filteredStock.length;
   const totalUnits = filteredStock.reduce((acc, s) => acc + Math.max(0, s.cantidadTotal), 0);
@@ -198,54 +201,64 @@ export default function Stock() {
         />
       </div>
 
+      {/* Filters (search + marca) - shared between mobile and desktop, adapts instead of hiding */}
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end animate-fade-up" style={{ animationDelay: '0.1s' }}>
+        <div className="relative flex-1 sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar producto..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 admin-input"
+          />
+        </div>
+        <div className="w-full sm:w-60">
+          <Select
+            value={selectedMarca || "all"}
+            onValueChange={(value) => setSelectedMarca(value === "all" ? "" : value)}
+          >
+            <SelectTrigger className="admin-input">
+              <SelectValue placeholder="Todas las marcas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                <span>Todas las marcas</span>
+              </SelectItem>
+              {Array.from(new Set(stock.map(s => s.marca))).filter((marca) => marca !== 'Otro').sort().map((marca) => {
+                const marcaColorMap: Record<string, string> = {
+                  'ENA': 'bg-blue-500',
+                  'Star': 'bg-green-500',
+                  'Body Advance': 'bg-red-500',
+                  'Gentech': 'bg-blue-900',
+                  'GoldNutrition': 'bg-yellow-500',
+                  'Growsbar': 'bg-gray-600',
+                  'Crudda': 'bg-orange-500',
+                  'Granger': 'bg-amber-900',
+                  'OneFit': 'bg-red-800',
+                  'Nutremax': 'bg-pink-500',
+                  'Integra': 'bg-yellow-600',
+                  'Otro': 'bg-gray-400',
+                };
+                const bgColor = marcaColorMap[marca] || marcaColorMap['Otro'];
+                return (
+                  <SelectItem key={marca} value={marca}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${bgColor}`}></div>
+                      {marca}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Desktop Table View */}
       <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.2s' }}>
-        <DataTable 
-          data={filteredStock} 
-          columns={columns} 
-          searchKey="producto"
-          filterElement={
-            <div className="w-full sm:w-60">
-              <Select
-                value={selectedMarca || "all"}
-                onValueChange={(value) => setSelectedMarca(value === "all" ? "" : value)}
-              >
-                <SelectTrigger className="admin-input">
-                  <SelectValue placeholder="Todas las marcas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    <span>Todas las marcas</span>
-                  </SelectItem>
-                  {Array.from(new Set(stock.map(s => s.marca))).filter((marca) => marca !== 'Otro').sort().map((marca) => {
-                    const marcaColorMap: Record<string, string> = {
-                      'ENA': 'bg-blue-500',
-                      'Star': 'bg-green-500',
-                      'Body Advance': 'bg-red-500',
-                      'Gentech': 'bg-blue-900',
-                      'GoldNutrition': 'bg-yellow-500',
-                      'Growsbar': 'bg-gray-600',
-                      'Crudda': 'bg-orange-500',
-                      'Granger': 'bg-amber-900',
-                      'OneFit': 'bg-red-800',
-                      'Nutremax': 'bg-pink-500',
-                      'Integra': 'bg-yellow-600',
-                      'Otro': 'bg-gray-400',
-                    };
-                    const bgColor = marcaColorMap[marca] || marcaColorMap['Otro'];
-                    return (
-                      <SelectItem key={marca} value={marca}>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${bgColor}`}></div>
-                          {marca}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-          }
+        <DataTable
+          data={filteredStock}
+          columns={columns}
         />
       </div>
 

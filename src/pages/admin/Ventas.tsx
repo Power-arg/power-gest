@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { useScrollThumb } from '@/hooks/useScrollThumb';
 import { DataTable } from '@/components/admin/DataTable';
 import { FormDialog } from '@/components/admin/FormDialog';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Loader2, Pencil, Trash2, Check, ChevronsUpDown } from 'lucide-react';
+import { Plus, Loader2, Pencil, Trash2, Check, ChevronsUpDown, Search } from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -60,11 +61,15 @@ export default function Ventas() {
   const [ventaToDelete, setVentaToDelete] = useState<Venta | null>(null);
   const [marcaSeleccionada, setMarcaSeleccionada] = useState<'ENA' | 'Star' | 'Body Advance' | 'Gentech' | 'GoldNutrition' | 'Growsbar' | 'Crudda' | 'Granger' | 'OneFit' | 'Nutremax' | 'Integra' | 'Otro'>('ENA');
   const [selectedCliente, setSelectedCliente] = useState<string>('');
+  const [openClienteFilter, setOpenClienteFilter] = useState(false);
   const [showOnlyNoPagados, setShowOnlyNoPagados] = useState<boolean>(false);
+  const [search, setSearch] = useState('');
   const [openProducto, setOpenProducto] = useState(false);
-  const [productoWidth, setProductoWidth] = useState<number>(0);
-  const productoTriggerRef = useRef<HTMLButtonElement>(null);
-  const productoListRef = useRef<HTMLDivElement>(null);
+  const [openClientePicker, setOpenClientePicker] = useState(false);
+  const [isNewCliente, setIsNewCliente] = useState(false);
+  const productoScroll = useScrollThumb();
+  const clienteFilterScroll = useScrollThumb();
+  const clienteFormScroll = useScrollThumb();
 
   const [formData, setFormData] = useState({
     producto: '',
@@ -105,16 +110,10 @@ export default function Ventas() {
   }, []);
 
   useEffect(() => {
-    if (productoTriggerRef.current && openProducto) {
-      setProductoWidth(productoTriggerRef.current.offsetWidth);
+    if (productoScroll.containerRef.current) {
+      productoScroll.containerRef.current.scrollTop = 0;
     }
-  }, [openProducto]);
-
-  useEffect(() => {
-    if (productoListRef.current) {
-      productoListRef.current.scrollTop = 0;
-    }
-  }, [openProducto, productos]);
+  }, [openProducto, productos, productoScroll.containerRef]);
 
   const resetForm = () => {
     setFormData({
@@ -129,6 +128,7 @@ export default function Ventas() {
     });
     setStockDisponible(0);
     setMarcaSeleccionada('ENA');
+    setIsNewCliente(false);
     setEditingVenta(null);
   };
 
@@ -152,6 +152,17 @@ export default function Ventas() {
     setOpenProducto(false);
   };
 
+  const handleClienteChange = (value: string) => {
+    if (value === 'new') {
+      setIsNewCliente(true);
+      setFormData({ ...formData, cliente: '' });
+    } else {
+      setIsNewCliente(false);
+      setFormData({ ...formData, cliente: value });
+    }
+    setOpenClientePicker(false);
+  };
+
   const handleEdit = (venta: Venta) => {
     setEditingVenta(venta);
     const producto = productos.find(p => p.producto === venta.producto);
@@ -168,6 +179,7 @@ export default function Ventas() {
       usuarioACargo: venta.usuarioACargo,
       fecha: venta.fecha,
     });
+    setIsNewCliente(false);
     setDialogOpen(true);
   };
 
@@ -200,7 +212,8 @@ export default function Ventas() {
   const ventasFiltradas = ventas.filter(v => {
     const matchesCliente = selectedCliente === '' || v.cliente.trim() === selectedCliente;
     const matchesPagado = !showOnlyNoPagados || !v.isPagado;
-    return matchesCliente && matchesPagado;
+    const matchesSearch = v.producto.toLowerCase().includes(search.toLowerCase());
+    return matchesCliente && matchesPagado && matchesSearch;
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -345,50 +358,97 @@ export default function Ventas() {
         </Button>
       </div>
 
+      {/* Filters (search + cliente + no pagados) - shared between mobile and desktop, adapts instead of hiding */}
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end animate-fade-up" style={{ animationDelay: '0.1s' }}>
+        <div className="relative flex-1 sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar producto..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 admin-input"
+          />
+        </div>
+        <div className="w-full sm:w-60">
+          <Popover open={openClienteFilter} onOpenChange={setOpenClienteFilter}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openClienteFilter}
+                className="w-full justify-between admin-input h-10 px-3 py-2 font-normal"
+              >
+                <span className="truncate">{selectedCliente || "Todos los clientes"}</span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start" side="bottom" avoidCollisions={false}>
+              <Command>
+                <CommandInput placeholder="Buscar cliente..." />
+                <div className="relative">
+                  <CommandList
+                    ref={clienteFilterScroll.containerRef}
+                    onScroll={clienteFilterScroll.update}
+                    className="scrollbar-thin"
+                  >
+                    <CommandEmpty>No hay clientes encontrados.</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value="Todos los clientes"
+                        onSelect={() => {
+                          setSelectedCliente('');
+                          setOpenClienteFilter(false);
+                        }}
+                      >
+                        <Check className={`mr-2 h-4 w-4 ${selectedCliente === '' ? "opacity-100" : "opacity-0"}`} />
+                        Todos los clientes
+                      </CommandItem>
+                      {clientesUnicos.map((cliente) => (
+                        <CommandItem
+                          key={cliente}
+                          value={cliente}
+                          onSelect={() => {
+                            setSelectedCliente(cliente);
+                            setOpenClienteFilter(false);
+                          }}
+                        >
+                          <Check className={`mr-2 h-4 w-4 ${selectedCliente === cliente ? "opacity-100" : "opacity-0"}`} />
+                          {cliente}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                  <div
+                    ref={clienteFilterScroll.thumbRef}
+                    className="absolute right-0.5 top-0 w-1 rounded-full bg-border opacity-0 transition-opacity sm:hidden pointer-events-none"
+                    style={{ height: '20%' }}
+                  />
+                </div>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="flex items-center gap-2 sm:pb-2.5">
+          <Switch
+            checked={showOnlyNoPagados}
+            onCheckedChange={setShowOnlyNoPagados}
+          />
+          <span className="text-sm text-muted-foreground whitespace-nowrap">No pagados</span>
+        </div>
+      </div>
+
       {/* Desktop Table View */}
-      <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.1s' }}>
+      <div className="hidden md:block animate-fade-up" style={{ animationDelay: '0.2s' }}>
         <DataTable
           data={ventasFiltradas}
           columns={columns}
           onEdit={handleEdit}
           onDelete={handleDeleteClick}
-          searchKey="producto"
-          filterElement={
-            <div className="flex gap-3 items-end">
-              <div className="w-60">
-                <Select
-                  value={selectedCliente || "all"}
-                  onValueChange={(value) => setSelectedCliente(value === "all" ? "" : value)}
-                >
-                  <SelectTrigger className="admin-input">
-                    <SelectValue placeholder="Todos los clientes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">
-                      <span>Todos los clientes</span>
-                    </SelectItem>
-                    {clientesUnicos.map((cliente) => (
-                      <SelectItem key={cliente} value={cliente}>
-                        {cliente}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={showOnlyNoPagados}
-                  onCheckedChange={setShowOnlyNoPagados}
-                />
-                <span className="text-sm text-muted-foreground whitespace-nowrap">No pagados</span>
-              </div>
-            </div>
-          }
         />
       </div>
 
       {/* Mobile Cards View */}
-      <div className="md:hidden space-y-4 animate-fade-up" style={{ animationDelay: '0.1s' }}>
+      <div className="md:hidden space-y-4 animate-fade-up" style={{ animationDelay: '0.2s' }}>
         {ventasFiltradas.length === 0 ? (
           <div className="glass-card p-6 text-center text-muted-foreground">
             No hay ventas registradas
@@ -485,49 +545,61 @@ export default function Ventas() {
               <Popover open={openProducto} onOpenChange={setOpenProducto}>
                 <PopoverTrigger asChild>
                   <Button
-                    ref={productoTriggerRef}
                     variant="outline"
                     role="combobox"
                     aria-expanded={openProducto}
-                    className="w-full justify-between admin-input h-10 px-3 py-2"
+                    className="w-full justify-between admin-input h-10 px-3 py-2 font-normal"
                   >
-                    {formData.producto
-                      ? formData.producto
-                      : "Selecciona producto..."}
+                    <span className="truncate">
+                      {formData.producto
+                        ? formData.producto
+                        : "Selecciona producto..."}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent style={{ width: productoWidth ? `${productoWidth}px` : 'auto' }} className="p-0" align="start">
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start" side="bottom" avoidCollisions={false}>
                   <Command>
                     <CommandInput placeholder="Buscar producto..." />
-                    <CommandList ref={productoListRef} className="overflow-y-auto">
-                      <CommandEmpty>No hay productos encontrados.</CommandEmpty>
-                      <CommandGroup>
-                        {productos
-                          .sort((a, b) => a.producto.localeCompare(b.producto))
-                          .map((p) => (
-                            <CommandItem
-                              key={p.producto}
-                              value={p.producto}
-                              onSelect={() => handleProductoChange(p.producto)}
-                            >
-                              <Check
-                                className={`mr-2 h-4 w-4 ${
-                                  formData.producto === p.producto
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                }`}
-                              />
-                              <div className="flex-1">
-                                <div>{p.producto}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  Stock: {p.stockDisponible}
+                    <div className="relative">
+                      <CommandList
+                        ref={productoScroll.containerRef}
+                        onScroll={productoScroll.update}
+                        className="overflow-y-auto scrollbar-thin"
+                      >
+                        <CommandEmpty>No hay productos encontrados.</CommandEmpty>
+                        <CommandGroup>
+                          {productos
+                            .sort((a, b) => a.producto.localeCompare(b.producto))
+                            .map((p) => (
+                              <CommandItem
+                                key={p.producto}
+                                value={p.producto}
+                                onSelect={() => handleProductoChange(p.producto)}
+                              >
+                                <Check
+                                  className={`mr-2 h-4 w-4 ${
+                                    formData.producto === p.producto
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  }`}
+                                />
+                                <div className="flex-1">
+                                  <div>{p.producto}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Stock: {p.stockDisponible}
+                                  </div>
                                 </div>
-                              </div>
-                            </CommandItem>
-                          ))}
-                      </CommandGroup>
-                    </CommandList>
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </CommandList>
+                      <div
+                        ref={productoScroll.thumbRef}
+                        className="absolute right-0.5 top-0 w-1 rounded-full bg-border opacity-0 transition-opacity sm:hidden pointer-events-none"
+                        style={{ height: '20%' }}
+                      />
+                    </div>
                   </Command>
                 </PopoverContent>
               </Popover>
@@ -581,13 +653,73 @@ export default function Ventas() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="cliente">Cliente</Label>
-              <Input
-                id="cliente"
-                value={formData.cliente}
-                onChange={(e) => setFormData({ ...formData, cliente: e.target.value })}
-                className="admin-input"
-                required
-              />
+              <Popover open={openClientePicker} onOpenChange={setOpenClientePicker}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openClientePicker}
+                    className="w-full justify-between admin-input h-10 px-3 py-2 font-normal"
+                  >
+                    <span className="truncate">
+                      {isNewCliente
+                        ? "+ Nuevo Cliente"
+                        : formData.cliente
+                        ? formData.cliente
+                        : "Selecciona o crea nuevo..."}
+                    </span>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start" side="bottom" avoidCollisions={false}>
+                  <Command>
+                    <CommandInput placeholder="Buscar cliente..." />
+                    <div className="relative">
+                      <CommandList
+                        ref={clienteFormScroll.containerRef}
+                        onScroll={clienteFormScroll.update}
+                        className="scrollbar-thin"
+                      >
+                        <CommandEmpty>No hay clientes encontrados.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="new"
+                            onSelect={() => handleClienteChange("new")}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                isNewCliente ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            + Nuevo Cliente
+                          </CommandItem>
+                          {clientesUnicos.map((cliente) => (
+                            <CommandItem
+                              key={cliente}
+                              value={cliente}
+                              onSelect={() => handleClienteChange(cliente)}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  !isNewCliente && formData.cliente === cliente
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                }`}
+                              />
+                              {cliente}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                      <div
+                        ref={clienteFormScroll.thumbRef}
+                        className="absolute right-0.5 top-0 w-1 rounded-full bg-border opacity-0 transition-opacity sm:hidden pointer-events-none"
+                        style={{ height: '20%' }}
+                      />
+                    </div>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label htmlFor="usuarioACargo">Usuario a Cargo</Label>
@@ -606,6 +738,20 @@ export default function Ventas() {
               </Select>
             </div>
           </div>
+
+          {isNewCliente && (
+            <div className="space-y-2">
+              <Label htmlFor="clienteNuevo">Nombre del Cliente</Label>
+              <Input
+                id="clienteNuevo"
+                value={formData.cliente}
+                onChange={(e) => setFormData({ ...formData, cliente: e.target.value })}
+                className="admin-input"
+                placeholder="Ej: Juan Pérez"
+                required
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
