@@ -82,11 +82,19 @@ export default function Ventas() {
     fecha: new Date().toISOString().split('T')[0],
   });
 
+  const sortVentas = (items: Venta[]) =>
+    [...items].sort((a, b) => {
+      if (a.isPagado !== b.isPagado) {
+        return Number(a.isPagado) - Number(b.isPagado);
+      }
+
+      return new Date(b.fecha).getTime() - new Date(a.fecha).getTime();
+    });
+
   const fetchVentas = async () => {
     try {
       const data = await getVentas();
-      // Ordenar por fecha de más reciente a más antigua
-      const sorted = data.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+      const sorted = sortVentas(data);
       setVentas(sorted);
     } catch (error: any) {
       toast({ title: 'Error al cargar ventas', description: error.message, variant: 'destructive' });
@@ -209,12 +217,14 @@ export default function Ventas() {
   ).sort();
 
   // Filtrar ventas según los filtros seleccionados
-  const ventasFiltradas = ventas.filter(v => {
-    const matchesCliente = selectedCliente === '' || v.cliente.trim() === selectedCliente;
-    const matchesPagado = !showOnlyNoPagados || !v.isPagado;
-    const matchesSearch = v.producto.toLowerCase().includes(search.toLowerCase());
-    return matchesCliente && matchesPagado && matchesSearch;
-  });
+  const ventasFiltradas = sortVentas(
+    ventas.filter(v => {
+      const matchesCliente = selectedCliente === '' || v.cliente.trim() === selectedCliente;
+      const matchesPagado = !showOnlyNoPagados || !v.isPagado;
+      const matchesSearch = v.producto.toLowerCase().includes(search.toLowerCase());
+      return matchesCliente && matchesPagado && matchesSearch;
+    })
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
